@@ -23,6 +23,7 @@
         game.load.image('star', 'assets/star.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
+        game.load.spritesheet('skater', 'assets/skater.png', 76, 150);
     }
 
     var player;
@@ -38,7 +39,6 @@
     var fireButton;
 
     function create() {
-
         //world functions
         game.world.setBounds(0, 0, 3500, this.game.height);
 
@@ -50,7 +50,7 @@
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        //  The platforms group contains the ground and the 2 ledges we can jump on
+        //  The platforms group contains the ground and the ledges we can jump on
         platforms = game.add.group();
 
         //  We will enable physics for any object that is created in this group
@@ -65,12 +65,31 @@
         //  This stops it from falling away when you jump on it
         ground.body.immovable = true;
 
-        //  Now let's create two ledges
+        //  Now let's create ZILLIONS of ledges
         var ledge = platforms.create(400, 400, 'ground');
         ledge.body.immovable = true;
-
+        ledge = platforms.create(100, 100, 'ground');
+        ledge.body.immovable = true;
         ledge = platforms.create(-150, 250, 'ground');
         ledge.body.immovable = true;
+        ledge = platforms.create(900, 325, 'ground');
+        ledge.body.immovable = true;
+        ledge = platforms.create(1450, 400, 'ground');
+        ledge.body.immovable = true;
+        ledge = platforms.create(1700, 200, 'ground');
+        ledge.body.immovable = true;
+        ledge = platforms.create(2000, 350, 'ground');
+        ledge.body.immovable = true;
+        ledge = platforms.create(2300, 100, 'ground');
+        ledge.body.immovable = true;
+        ledge = platforms.create(2600, 400, 'ground');
+        ledge.body.immovable = true;
+        ledge = platforms.create(2950, 250, 'ground');
+        ledge.body.immovable = true;
+        ledge = platforms.create(3290, 370, 'ground');
+        ledge.body.immovable = true;
+
+        platforms.physicsBodyType = Phaser.Physics.ARCADE;
 
         // The player and its settings
         player = game.add.sprite(33, game.world.height - 150, 'squirrel');
@@ -138,14 +157,23 @@
 
         createCyclists();
 
-
-
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
-        // Generate some cyclists
-       // releaseWheels();
+        //  The score
+        scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        scoreText.fixedToCamera = true;
+        scoreText.cameraOffset.setTo(16, 16);
+
+        /*//  Lives
+        lives = game.add.group();
+        game.add.text(game.world.width - 100, 10, 'Lives : ', { font: '34px Arial', fill: '#fff' });
+
+        //  Game over
+        stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '84px Arial', fill: '#fff' });
+        stateText.anchor.setTo(0.5, 0.5);
+        stateText.visible = false;*/
     }
 
     function update() {
@@ -210,13 +238,9 @@
         {
             fireBullet();
         }
-/*
-        if (total < 200 && (game.time.now > baddieTime)) {
-            releaseWheels();
-        }*/
 
-        game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
-        
+        game.physics.arcade.overlap(bullets, cyclist, collisionHandler, null, this);
+
     }
 
     function collectStar (player, star) {
@@ -267,8 +291,6 @@
         score += 20;
         scoreText.text = 'Score: ' + score;
     }
-
-
 
 </script>
 
