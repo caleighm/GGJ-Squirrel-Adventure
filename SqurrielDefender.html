@@ -21,7 +21,7 @@
         game.load.image('sky', 'assets/bakbak3.png');
         game.load.image('ground', 'assets/platform.png');
         game.load.image('star', 'assets/star.png');
-        game.load.spritesheet('squirrel', 'assets/Squirrel2.png', 33, 32);
+        game.load.spritesheet('squirrel', 'assets/Squirrel2.png', 33, 34);
 
     }
 
@@ -78,19 +78,20 @@
         ledge.body.immovable = true;
 
         // The player and its settings
-        player = game.add.sprite(300, game.world.height - 150, 'squirrel');
+        player = game.add.sprite(33, game.world.height - 150, 'squirrel');
 
         //  We need to enable physics on the player
         game.physics.arcade.enable(player);
 
         //  Player physics properties. Give the little guy a slight bounce.
-        player.body.bounce.y = 0.2;
+        // player.body.bounce.y = 0.2;
         player.body.gravity.y = 300;
         player.body.collideWorldBounds = true;
 
         //  Our two animations, walking left and right.
         player.animations.add('left', [0, 1, 3], 10, true);
         player.animations.add('right', [4, 6, 2], 10, true);
+        player.animations.add('jump', [8], 1, true);
 
         player.scale.setMagnitude(3);
 
@@ -168,6 +169,9 @@
         if (cursors.up.isDown && player.body.touching.down)
         {
             player.body.velocity.y = -350;
+        }
+        if (!player.body.touching.down) {
+            player.animations.play('jump');
         }
 
     }
