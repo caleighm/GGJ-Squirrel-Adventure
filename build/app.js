@@ -1,10 +1,14 @@
 /// <reference path="../lib/phaser.d.ts"/>
 var SimpleGame = (function () {
     function SimpleGame() {
-        this.game = new Phaser.Game(800, 600, Phaser.AUTO, "content", this);
+        this.game = new Phaser.Game(800, 600, Phaser.AUTO, 'content', { preload: this.preload, create: this.create, update: this.update });
     }
     SimpleGame.prototype.preload = function () {
-        this.game.load.image("logo", "images/phaser-logo-small.png");
+        //this.game.load.image("logo", "images/phaser-logo-small.png");
+        this.game.load.image('sky', 'assets/sky.png');
+        this.game.load.image('ground', 'assets/platform.png');
+        this.game.load.image("logo", "assets/star.png");
+        this.game.load.spritesheet('dude', "assets/dude.png", 32, 48);
     };
     SimpleGame.prototype.create = function () {
         this.logo = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, "logo");

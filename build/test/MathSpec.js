@@ -2,7 +2,7 @@
  * Created by rtholmes on 2016-10-31.
  */
 "use strict";
-var chai_1 = require('chai');
+var chai_1 = require("chai");
 var Math_1 = require("../src/Math");
 var Util_1 = require("../src/Util");
 describe("MathSpec", function () {
