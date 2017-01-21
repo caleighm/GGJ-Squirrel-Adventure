@@ -239,7 +239,8 @@
             fireBullet();
         }
 
-        game.physics.arcade.overlap(bullets, cyclist, collisionHandler, null, this);
+        game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
+        game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
 
     }
 
@@ -301,6 +302,12 @@
 
         score += 20;
         scoreText.text = 'Score: ' + score;
+    }
+
+    function playerCollisionHandler(player,cyclist){
+        //bullet.kill();
+        cyclist.kill();
+
     }
 
 </script>
