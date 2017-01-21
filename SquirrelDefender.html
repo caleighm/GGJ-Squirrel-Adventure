@@ -17,6 +17,7 @@
     var game = new Phaser.Game(1300,700, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
 
     function preload() {
+        game.load.image('bullet', 'assets/star.png');
         game.load.image('background', 'assets/background.png');
         game.load.image('ground', 'assets/platform.png');
         game.load.image('star', 'assets/star.png');
@@ -31,6 +32,10 @@
     var score = 0;
     var scoreText;
     var outside;
+
+    var bullets;
+    var bulletTime = 0;
+    var fireButton;
 
     function create() {
 
@@ -112,8 +117,20 @@
         scoreText.fixedToCamera = true;
         scoreText.cameraOffset.setTo(16, 16);
 
+        // Bullets
+        bullets = game.add.group();
+        bullets.enableBody = true;
+        bullets.physicsBodyType = Phaser.Physics.ARCADE;
+        bullets.createMultiple(30, 'bullet');
+        bullets.setAll('anchor.x', 0.5);
+        bullets.setAll('anchor.y', 1);
+        bullets.setAll('outOfBoundsKill', true);
+        bullets.setAll('checkWorldBounds', true);
+
+
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
+        fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
         prevCamX = game.camera.x;
 
@@ -163,6 +180,12 @@
             player.animations.play('jump');
         }
 
+        //Fire
+        if (fireButton.isDown)
+        {
+            fireBullet();
+        }
+
     }
 
     function collectStar (player, star) {
@@ -174,6 +197,24 @@
         score += 10;
         scoreText.text = 'Score: ' + score;
 
+    }
+
+    function fireBullet() {
+        if (game.time.now > bulletTime) {
+            bullet = bullets.getFirstExists(false);
+            if (bullet) {
+                bullet.reset(player.x + 70, player.y + 40);
+                //bullet.body.velocity.x = 400;
+                if (cursors.left.isDown) {
+                    bullet.body.velocity.x = -400;
+                    bulletTime = game.time.now + 200;
+                }
+                else{
+                    bullet.body.velocity.x = 800;
+                    bulletTime = game.time.now + 200;
+                }
+            }
+        }
     }
 
 </script>
