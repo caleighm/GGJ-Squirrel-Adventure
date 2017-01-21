@@ -17,10 +17,12 @@
     var game = new Phaser.Game(1300,700, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
 
     function preload() {
+        game.load.image('bullet', 'assets/star.png');
         game.load.image('background', 'assets/background.png');
         game.load.image('ground', 'assets/platform.png');
         game.load.image('star', 'assets/star.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
+        game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
     }
 
     var player;
@@ -32,18 +34,22 @@
     var scoreText;
     var outside;
 
+    var bullets;
+    var bulletTime = 0;
+    var fireButton;
+
+    var total;
+    var timer;
+
     function create() {
 
-        //background
+        //world functions
         game.world.setBounds(0, 0, 3500, this.game.height);
 
         outside = game.add.tileSprite(0, 0, this.game.world.width,
             this.game.world.height, 'background');
 
-        outside.autoScroll(this.levelSpeed, 0);
-
-        frames = Phaser.Animation.generateFrameNames('frame', 2, 30, '', 2);
-        frames.unshift('frame02');
+        outside.autoScroll(0, 0);
 
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -116,10 +122,25 @@
         scoreText.fixedToCamera = true;
         scoreText.cameraOffset.setTo(16, 16);
 
+        // Bullets
+        bullets = game.add.group();
+        bullets.enableBody = true;
+        bullets.physicsBodyType = Phaser.Physics.ARCADE;
+        bullets.createMultiple(30, 'bullet');
+        bullets.setAll('anchor.x', 0.5);
+        bullets.setAll('anchor.y', 1);
+        bullets.setAll('outOfBoundsKill', true);
+        bullets.setAll('checkWorldBounds', true);
+
+
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
+        fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
         prevCamX = game.camera.x;
+
+        // Generate some cyclists
+        releaseWheels();
 
     }
 
@@ -165,6 +186,32 @@
             player.animations.play('jump');
         }
 
+        //Fire
+        if (fireButton.isDown)
+        {
+            fireBullet();
+        }
+
+        if (total < 20 && (game.time.now % 5 == 0)) {
+            releaseWheels();
+        }
+
+    }
+
+    function releaseWheels() {
+        cyclist = game.add.sprite(-(Math.random() * 800), game.world.height - 190, 'bicycle');
+        game.physics.arcade.enable(cyclist);
+        cyclist.body.collideWorldBounds = true;
+
+        cyclist.animations.add('left', [0, 1], 10, true);
+        cyclist.animations.add('right', [2, 3], 10, true);
+
+        cyclist.scale.setMagnitude(5);
+
+        game.add.tween(cyclist).to({ x: game.width + (1600 + cyclist.x)}, 20000, Phaser.Easing.Linear.None, true);
+
+        total++;
+        timer = game.time.now + 100;
     }
 
     function collectStar (player, star) {
@@ -176,6 +223,24 @@
         score += 10;
         scoreText.text = 'Score: ' + score;
 
+    }
+
+    function fireBullet() {
+        if (game.time.now > bulletTime) {
+            bullet = bullets.getFirstExists(false);
+            if (bullet) {
+                bullet.reset(player.x + 40, player.y + 57);
+                //bullet.body.velocity.x = 400;
+                if (cursors.left.isDown) {
+                    bullet.body.velocity.x = -400;
+                    bulletTime = game.time.now + 200;
+                }
+                else{
+                    bullet.body.velocity.x = 800;
+                    bulletTime = game.time.now + 200;
+                }
+            }
+        }
     }
 
 </script>
