@@ -20,7 +20,7 @@
         game.load.image('background', 'assets/background.png');
         game.load.image('ground', 'assets/platform.png');
         game.load.image('star', 'assets/star.png');
-        game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 32);
+        game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
     }
 
     var player;
@@ -78,13 +78,14 @@
 
         //  Player physics properties. Give the little guy a slight bounce.
         // player.body.bounce.y = 0.2;
-        player.body.gravity.y = 300;
+        player.body.gravity.y = 1000;
         player.body.collideWorldBounds = true;
 
         //  Our two animations, walking left and right.
         player.animations.add('left', [0, 1, 3], 10, true);
         player.animations.add('right', [4, 6, 2], 10, true);
         player.animations.add('jump', [8], 1, true);
+        player.animations.add('idle', [10, 11], 4, true);
 
         player.scale.setMagnitude(3);
 
@@ -137,7 +138,7 @@
         if (cursors.left.isDown)
         {
             //  Move to the left
-            player.body.velocity.x = -150;
+            player.body.velocity.x = -300;
 
             player.animations.play('left');
         }
@@ -145,22 +146,20 @@
         {
             //  Move to the right
             //player.body.velocity.x = 150;
-            player.body.velocity.x = 550;
+            player.body.velocity.x = 300;
 
             player.animations.play('right');
         }
         else
         {
             //  Stand still
-            player.animations.stop();
-
-            player.frame = 5;
+            player.animations.play('idle');
         }
 
         //  Allow the player to jump if they are touching the ground.
         if (cursors.up.isDown && player.body.touching.down)
         {
-            player.body.velocity.y = -350;
+            player.body.velocity.y = -800;
         }
         if (!player.body.touching.down) {
             player.animations.play('jump');
