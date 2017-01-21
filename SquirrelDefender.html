@@ -22,6 +22,7 @@
         game.load.image('ground', 'assets/platform.png');
         game.load.image('star', 'assets/star.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 32);
+        game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
     }
 
     var player;
@@ -36,6 +37,9 @@
     var bullets;
     var bulletTime = 0;
     var fireButton;
+
+    var total;
+    var timer;
 
     function create() {
 
@@ -134,6 +138,9 @@
 
         prevCamX = game.camera.x;
 
+        // Generate some cyclists
+        releaseWheels();
+
     }
 
     function update() {
@@ -186,6 +193,26 @@
             fireBullet();
         }
 
+        if (total < 20 && (game.time.now % 5 == 0)) {
+            releaseWheels();
+        }
+
+    }
+
+    function releaseWheels() {
+        cyclist = game.add.sprite(-(Math.random() * 800), game.world.height - 190, 'bicycle');
+        game.physics.arcade.enable(cyclist);
+        cyclist.body.collideWorldBounds = true;
+
+        cyclist.animations.add('left', [0, 1], 10, true);
+        cyclist.animations.add('right', [2, 3], 10, true);
+
+        cyclist.scale.setMagnitude(5);
+
+        game.add.tween(cyclist).to({ x: game.width + (1600 + cyclist.x)}, 20000, Phaser.Easing.Linear.None, true);
+
+        total++;
+        timer = game.time.now + 100;
     }
 
     function collectStar (player, star) {
