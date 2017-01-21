@@ -34,16 +34,13 @@
 
     function create() {
 
-        //background
+        //world functions
         game.world.setBounds(0, 0, 3500, this.game.height);
 
         outside = game.add.tileSprite(0, 0, this.game.world.width,
             this.game.world.height, 'background');
 
-        outside.autoScroll(this.levelSpeed, 0);
-
-        frames = Phaser.Animation.generateFrameNames('frame', 2, 30, '', 2);
-        frames.unshift('frame02');
+        outside.autoScroll(0, 0);
 
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
