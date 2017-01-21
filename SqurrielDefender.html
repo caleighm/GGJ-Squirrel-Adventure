@@ -18,7 +18,7 @@
 
     function preload() {
 
-        game.load.image('sky', 'assets/sky.png');
+        game.load.image('sky', 'assets/bakbak.png');
         game.load.image('ground', 'assets/platform.png');
         game.load.image('star', 'assets/star.png');
         game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
@@ -32,10 +32,17 @@
     var stars;
     var score = 0;
     var scoreText;
+    var outside;
 
     function create() {
 
         game.world.setBounds(0, 0, 800*4, 600);
+
+        outside = game.add.tileSprite(0, 0, this.game.world.width,
+            this.game.world.height, 'sky');
+
+        outside.autoScroll(this.levelSpeed, 0);
+
 
         frames = Phaser.Animation.generateFrameNames('frame', 2, 30, '', 2);
         frames.unshift('frame02');
@@ -44,7 +51,7 @@
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
         //  A simple background for our game
-        game.add.sprite(0, 0, 'sky');
+        //game.add.sprite(0, 0, 'sky');
 
         //  The platforms group contains the ground and the 2 ledges we can jump on
         platforms = game.add.group();
@@ -110,9 +117,13 @@
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
 
+        prevCamX = game.camera.x;
+
     }
 
     function update() {
+
+        //outside.tilePosition.x += 2;
 
         //  Collide the player and the stars with the platforms
         game.physics.arcade.collide(player, platforms);
