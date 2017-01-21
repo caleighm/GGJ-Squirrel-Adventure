@@ -61,7 +61,7 @@
         platforms.enableBody = true;
 
         // Here we create the ground.
-        var ground = platforms.create(0, game.world.height - 64, 'ground');
+        var ground = platforms.create(0, game.world.height - 30, 'ground');
 
         //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
         ground.scale.setTo(10, 2);
@@ -132,16 +132,12 @@
         bullets.setAll('outOfBoundsKill', true);
         bullets.setAll('checkWorldBounds', true);
 
-
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
-        prevCamX = game.camera.x;
-
         // Generate some cyclists
         releaseWheels();
-
     }
 
     function update() {
