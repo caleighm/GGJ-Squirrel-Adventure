@@ -197,14 +197,14 @@
     }
 
     function releaseWheels() {
-        cyclist = game.add.sprite(3500, game.world.height - 190, 'bicycle');
+        cyclist = game.add.sprite(3500, game.world.height - 100, 'bicycle');
         game.physics.arcade.enable(cyclist);
         cyclist.body.collideWorldBounds = true;
 
         cyclist.animations.add('left', [0, 1], 10, true);
         cyclist.animations.play('left', 10, true);
 
-        cyclist.scale.setMagnitude(5);
+        cyclist.scale.setMagnitude(3);
 
         game.add.tween(cyclist).to({ x: -50}, 20000, Phaser.Easing.Linear.None, true);
 
