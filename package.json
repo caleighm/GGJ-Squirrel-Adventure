@@ -15,9 +15,21 @@
   "license": "MIT",
   "homepage": "https://github.com/wlk/phaser-typescript-boilerplate",
   "devDependencies": {
-    "webpack": "^1.12.12",
-    "webpack-dev-server": "^1.14.1",
-    "chai": "*",
-    "mocha": "*"
+    "bunyan": "^1.8.5",
+    "icedfrisby": "^0.3.X",
+    "joi": "^10.0.X",
+    "mocha": "^3.2.0",
+    "tslint": "^4.1.X"
+  },
+  "dependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/core-js": "^0.9.35",
+    "@types/mocha": "^2.2.33",
+    "@types/node": "^6.0.52",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "mochawesome": "^1.5.2",
+    "nyc": "^10.0.0",
+    "typescript": "^2.1.X"
   }
 }
