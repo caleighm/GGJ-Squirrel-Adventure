@@ -274,10 +274,21 @@
 
     function createCyclists() {
         for (var i = 0; i <50; i++){
-            cyclists.create(game.world.randomX, player.y + 100, 'bicycle');
+            var cyclist = game.add.sprite(game.world.randomX, player.y + 60, 'bicycle');
+            cyclist.scale.setTo(2, 2);
+
+            //cyclist.add.tween(cyclist).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
+            cyclists.add(cyclist);
         }
 
+        //cyclists.scale.set(20,20);
+
+       /* cyclists.forEach(function(child){
+            game.add.tween(child.scale).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
+        });
+*/
         game.add.tween(cyclists).to({x:cyclists.x-5},2000, Phaser.Easing.Default, true, 0, 100, true);
+
 
         cyclists.callAll('animations.add','animations','left', [0, 1], 10, true);
         cyclists.callAll('animations.play', 'animations', 'left');
