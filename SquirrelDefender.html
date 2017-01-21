@@ -162,11 +162,6 @@
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
-        //  The score
-        scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-        scoreText.fixedToCamera = true;
-        scoreText.cameraOffset.setTo(16, 16);
-
         /*//  Lives
         lives = game.add.group();
         game.add.text(game.world.width - 100, 10, 'Lives : ', { font: '34px Arial', fill: '#fff' });
@@ -275,7 +270,7 @@
                     bulletTime = game.time.now + 200;
                 }
                 else{
-                    bullet.body.velocity.x = 800;
+                    bullet.body.velocity.x = 400;
                     bulletTime = game.time.now + 200;
                 }
             }
@@ -314,9 +309,7 @@
     }
 
     function playerCollisionHandler(player,cyclist){
-        //bullet.kill();
         cyclist.kill();
-
     }
 
 </script>
