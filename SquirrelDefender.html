@@ -80,7 +80,7 @@
         ledge.body.immovable = true;
 
         // The player and its settings
-        player = game.add.sprite(33, game.world.height - 150, 'squirrel');
+        player = game.add.sprite(500, game.world.height - 150, 'squirrel');
 
         //  We need to enable physics on the player
         game.physics.arcade.enable(player);
@@ -91,14 +91,15 @@
         player.body.collideWorldBounds = true;
 
         //  Animations: walking left, right, jumping, idling, and landing.
-        player.animations.add('left', [0, 1, 3], 10, true);
-        player.animations.add('right', [4, 6, 2], 10, true);
+        player.animations.add('right', [4, 2, 6], 6, true);
+        //player.animations.add('right', [25, 27, 26, 27], 6, true);
+        //player.animations.add('left', [20, 22, 18], 6, true);
+        player.animations.add('left', [20, 22, 18], 6, true);
         player.animations.add('jump', [8], 1, true);
-        player.animations.add('idle', [10, 11], 4, true);
+        player.animations.add('idle', [9, 10, 9, 11], 4, true);
         player.animations.add('land', [7], 5, false);
 
         player.scale.setMagnitude(3);
-
 
         //  Finally some stars to collect
         stars = game.add.group();
@@ -174,8 +175,11 @@
                 player.body.velocity.y = -800;
                 isGrounded = false;
             }
-            //checkLanding();
-            player.animations.play('left');
+            if(player.body.touching.down) {    //checkLanding();;
+                player.animations.play('left');
+            } else {
+                player.animations.play('jump');
+            }
         } else if (cursors.right.isDown) {
             //  Move to the right
             player.body.velocity.x = 300;
@@ -183,8 +187,13 @@
                 //  Allow the player to jump if they are touching the ground.
                 player.body.velocity.y = -800;
                 isGrounded = false;
+                player.animations.play('jump');
             }
-                player.animations.play('right');
+            if(player.body.touching.down) {    //checkLanding();;
+                    player.animations.play('right');
+                } else {
+                    player.animations.play('jump');
+                }
         } else if (cursors.up.isDown && player.body.touching.down) {
             //  Allow the player to jump if they are touching the ground.
             player.body.velocity.y = -800;
