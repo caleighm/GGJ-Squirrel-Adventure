@@ -203,7 +203,7 @@
         if (game.time.now > bulletTime) {
             bullet = bullets.getFirstExists(false);
             if (bullet) {
-                bullet.reset(player.x + 70, player.y + 40);
+                bullet.reset(player.x + 40, player.y + 57);
                 //bullet.body.velocity.x = 400;
                 if (cursors.left.isDown) {
                     bullet.body.velocity.x = -400;
