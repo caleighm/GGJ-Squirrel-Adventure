@@ -1,9 +1,9 @@
-<!doctype html> 
-<html lang="en"> 
-<head> 
-	<meta charset="UTF-8" />
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
     <title>Squirrel Defender</title>
-	<script type="text/javascript" src="lib/js/phaser.min.js"></script>
+    <script type="text/javascript" src="lib/js/phaser.min.js"></script>
     <style type="text/css">
         body {
             margin: 0;
@@ -13,9 +13,7 @@
 <body>
 
 <script type="text/javascript">
-
     var game = new Phaser.Game(1300,700, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
-
     function preload() {
         game.load.image('bullet', 'assets/star.png');
         game.load.image('background', 'assets/background.png');
@@ -26,11 +24,11 @@
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
         game.load.spritesheet('skater', 'assets/skater.png', 76, 150);
     }
-
     var player;
     var isGrounded = false;
     var isDying = false;
     var isDead = false;
+    var isShaken = false;
     var grounds;
     var platforms;
     var groundgrp;
@@ -42,7 +40,6 @@
     var bullets;
     var bulletTime = 0;
     var fireButton;
-
     function create() {
         //-------------world functions----------
         game.world.setBounds(0, 0, 3500, this.game.height);
@@ -50,20 +47,10 @@
         outside.autoScroll(0, 0);
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
-
-/*
-        //  The ground group contains the ground. The platforms group contains the platforms we can jump on
-        groundgrp = game.add.group();
-        platforms = game.add.group();
-
-        //  We will enable physics for any object that is created in these groups
-        groundgrp.enableBody = true;*/
-
         //-------------Platform functions----------
         //  The platforms group contains the ground and the ledges we can jump on
         platforms = game.add.physicsGroup();
         //  We will enable physics for any object that is created in this group
-
         platforms.enableBody = true;
         //platforms = game.add.physicsGroup();
         //  Now let's create ZILLIONS of ledges
@@ -78,67 +65,25 @@
         platforms.create(2600, 400, 'platform');
         platforms.create(2950, 250, 'platform');
         platforms.create(3290, 370, 'platform');
-
         platforms.setAll('body.immovable', true);
+        platforms.setAll('body.moves', false);
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
-
         //-------------Grounds functions----------
         grounds = game.add.physicsGroup();
         grounds.enableBody = true;
-        // Here we create the ground.
-/*
-        var ground = groundgrp.create(0, game.world.height - 30, 'ground');
-
-        //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-        ground.scale.setTo(10, 2);
-
-        //  This stops it from falling away when you jump on it
-        ground.body.immovable = true;
-
-        //  Now let's create ZILLIONS of platforms
-        var ledge = platforms.create(400, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(100, 100, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(-150, 250, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(900, 325, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(1450, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(1700, 200, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2000, 350, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2300, 100, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2600, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2950, 250, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(3290, 370, 'ground');
-        ledge.body.immovable = true;
-
-        platforms.physicsBodyType = Phaser.Physics.ARCADE;
-        groundgrp.physicsBodyType = Phaser.Physics.ARCADE;
-*/
         var ground = grounds.create(0, game.world.height - 30, 'ground');
         //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
         ground.scale.setTo(10, 2);
         grounds.setAll('body.immovable', true);
         grounds.physicsBodyType = Phaser.Physics.ARCADE;
-
         // The player and its settings
         player = game.add.sprite(500, game.world.height - 500, 'squirrel');
-
         //  We need to enable physics on the player
         game.physics.arcade.enable(player);
-
         //  Player physics properties. Give the little guy a slight bounce.
         // player.body.bounce.y = 0.2;
         player.body.gravity.y = 1000;
         player.body.collideWorldBounds = true;
-
         //  Animations: walking left, right, jumping, idling, and landing.
         player.animations.add('right', [4, 2, 6], 6, true);
         //player.animations.add('right', [25, 27, 26, 27], 6, true);
@@ -149,35 +94,26 @@
         player.animations.add('land', [7], 5, false);
         player.animations.add('dying', [28, 29, 30, 31, 32, 33, 34, 35, 36], 10, false);
         player.animations.add('dead', [36], 1, true);
-
         player.scale.setMagnitude(3);
-
         //  Finally some stars to collect
         stars = game.add.group();
-
         //  We will enable physics for any star that is created in this group
         stars.enableBody = true;
-
         //  Here we'll create 12 of them evenly spaced apart
         for (var i = 0; i < 12; i++)
         {
             //  Create a star inside of the 'stars' group
             var star = stars.create(i * 70, 0, 'star');
-
             //  Let gravity do its thing
             star.body.gravity.y = 300;
-
             //  This just gives each star a slightly random bounce value
             star.body.bounce.y = 0.7 + Math.random() * 0.2;
         }
-
         game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.5);
-
         //  The score
         scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
         scoreText.fixedToCamera = true;
         scoreText.cameraOffset.setTo(16, 16);
-
         // Bullets
         bullets = game.add.group();
         bullets.enableBody = true;
@@ -187,35 +123,27 @@
         bullets.setAll('anchor.y', 1);
         bullets.setAll('outOfBoundsKill', true);
         bullets.setAll('checkWorldBounds', true);
-
         // Enemies
         cyclists = game.add.group();
         cyclists.enableBody = true;
         cyclists.physicsBodyType = Phaser.Physics.ARCADE;
         cyclists.setAll('outOfBoundsKill', true);
         cyclists.setAll('checkWorldBounds', true);
-
         createCyclists();
-
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     }
-
     function update() {
-
         //  Collide the player and the stars with the platforms
         game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
         game.physics.arcade.collide(stars, platforms);
         game.physics.arcade.collide(stars, groundgrp);
         game.physics.arcade.collide(player, groundgrp);
-
         game.physics.arcade.collide(player, grounds);
         game.physics.arcade.collide(stars, grounds);
-
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         game.physics.arcade.overlap(player, stars, collectStar, null, this);
-
         function checkLanding() {
             if (!player.body.touching.down) {
                 player.animations.play('jump');
@@ -228,7 +156,6 @@
                 }, this);
             }
         }
-
         //  Reset the players velocity (movement)
         player.body.velocity.x = 0;
         if (isDead) {
@@ -280,38 +207,31 @@
             player.animations.play('idle');
         }
 
+        if (!player.body.touching.down) isShaken = false;
 
         //Fire
         if (fireButton.isDown)
         {
             fireBullet();
         }
-
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
     }
-
     function collectStar (player, star) {
-
         // Removes the star from the screen
         star.kill();
-
         //  Add and update the score
         score += 10;
         scoreText.text = 'Score: ' + score;
-
     }
-
     function setFriction (player, platform) {
         player.reset(0,0);
     }
-
     function fireBullet() {
         if (game.time.now > bulletTime) {
             bullet = bullets.getFirstExists(false);
             if (bullet) {
                 bullet.reset(player.x + 40, player.y + 57);
-
                 if (cursors.left.isDown) {
                     bullet.body.velocity.x = -400;
                     bulletTime = game.time.now + 200;
@@ -323,7 +243,6 @@
             }
         }
     }
-
     function createCyclists() {
         for (var i = 0; i <50; i++){
             var cyclist = game.add.sprite(game.world.randomX, game.world.height - 90, 'bicycle');
@@ -334,23 +253,23 @@
         cyclists.callAll('animations.add','animations','left', [0, 1], 10, true);
         cyclists.callAll('animations.play', 'animations', 'left');
     }
-
     function ledgeShake(player, ledge) {
-        var rumbleOffset = 5;
-        var properties = { x: ledge.x - rumbleOffset };
-        var duration = 100;
-        var repeat = 4;
-        var ease = Phaser.Easing.Bounce.InOut;
-        var autoStart = false;
-        var yoyo = true;
-
-        var shake = game.add.tween(ledge).to(properties, duration, ease, autoStart, 10, repeat, yoyo);
-
-        //shake.onComplete.addOnce(platformshake(player, ledge));
-
-        shake.start();
+        if (! isShaken) {
+            isShaken = true;
+            var rumbleOffset = 8;
+            var properties = {x: ledge.x - rumbleOffset};
+            var duration = 100;
+            var repeat = 4;
+            var ease = Phaser.Easing.Bounce.In;
+            var autoStart = false;
+            var yoyo = true;
+            var shake = game.add.tween(ledge).to(properties, duration, ease, autoStart, 0, repeat, yoyo);
+            shake.start();
+            //shake.onComplete.add(function () {
+            //    isShaken = false;
+            //}, this);
+        }
     }
-
     function ledgeFall(ledge) {
         ledge.body.immovable = false;
     }
@@ -358,16 +277,13 @@
     function collisionHandler(bullet,cyclist){
         bullet.kill();
         cyclist.kill();
-
         score += 20;
         scoreText.text = 'Score: ' + score;
     }
-
     function playerCollisionHandler(player,cyclist){
         cyclist.kill();
         isDying = true;
     }
-
 </script>
 
 </body>
