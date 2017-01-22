@@ -51,19 +51,10 @@
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-/*
-        //  The ground group contains the ground. The platforms group contains the platforms we can jump on
-        groundgrp = game.add.group();
-        platforms = game.add.group();
-
-        //  We will enable physics for any object that is created in these groups
-        groundgrp.enableBody = true;*/
-
         //-------------Platform functions----------
         //  The platforms group contains the ground and the ledges we can jump on
         platforms = game.add.physicsGroup();
         //  We will enable physics for any object that is created in this group
-
         platforms.enableBody = true;
         //platforms = game.add.physicsGroup();
         //  Now let's create ZILLIONS of ledges
@@ -85,43 +76,6 @@
         //-------------Grounds functions----------
         grounds = game.add.physicsGroup();
         grounds.enableBody = true;
-        // Here we create the ground.
-/*
-        var ground = groundgrp.create(0, game.world.height - 30, 'ground');
-
-        //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-        ground.scale.setTo(10, 2);
-
-        //  This stops it from falling away when you jump on it
-        ground.body.immovable = true;
-
-        //  Now let's create ZILLIONS of platforms
-        var ledge = platforms.create(400, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(100, 100, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(-150, 250, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(900, 325, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(1450, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(1700, 200, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2000, 350, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2300, 100, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2600, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2950, 250, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(3290, 370, 'ground');
-        ledge.body.immovable = true;
-
-        platforms.physicsBodyType = Phaser.Physics.ARCADE;
-        groundgrp.physicsBodyType = Phaser.Physics.ARCADE;
-*/
         var ground = grounds.create(0, game.world.height - 30, 'ground');
         //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
         ground.scale.setTo(10, 2);
