@@ -23,7 +23,7 @@
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
         game.load.spritesheet('acorn', 'assets/acorn.png', 20, 23);
-        game.load.spritesheet('poof', 'assets/poof.png', 128, 128);
+        game.load.spritesheet('poof', 'assets/poof2.png', 512, 512);
         game.load.audio('amok', ['assets/audio/amok.mp3', 'assets/audio/amok.ogg']);
     }
 
@@ -167,6 +167,7 @@
         game.physics.arcade.collide(acorns, platforms);
         game.physics.arcade.collide(player, grounds);
         game.physics.arcade.collide(acorns, grounds);
+        game.physics.arcade.collide(cyclists, grounds);
         //  Checks to see if the player overlaps with any of the acorns, if he does call the collectAcorn function
         game.physics.arcade.overlap(player, acorns, collectAcorn, null, this);
         function checkLanding() {
@@ -293,7 +294,7 @@
         var cyclist = game.add.sprite(player.x + game.world.randomX, game.world.height - 90, 'bicycle');
         cyclist.isLeft = true;  // this might not be correct if cyclists can spawn to the right of the player...
         cyclist.anchor.setTo(.5,.5);
-        cyclist.scale.setTo(2, 2);
+        cyclist.scale.setTo(3, 3);
         cyclists.add(cyclist);
         cyclistlives++;
         cyclist.body.collideWorldBounds = true;
@@ -366,9 +367,13 @@
 
     function poofMaker(x, y) {
         var smooke = game.add.sprite(x, y-100, 'poof');
-        smooke.animations.add('poofing',
-            [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],
-            20, true);
+        smooke.scale.setTo(.25,.25);
+        //deadGroup = game.add.group();
+        var anim = smooke.animations.add('poofing',
+            //[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],
+            [0,1,4,5,2,6,3,7,8,12,13],
+            10, false, true);
+        anim.killOnComplete = true;
         smooke.animations.play('poofing');
     }
 
