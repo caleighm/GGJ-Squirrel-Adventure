@@ -33,7 +33,6 @@
     var isDead = false;
     var grounds;
     var platforms;
-    var groundgrp;
     var cursors;
     var stars;
     var score = 0;
@@ -71,6 +70,7 @@
         platforms.create(3290, 370, 'platform');
 
         platforms.setAll('body.immovable', true);
+        platforms.setAll('body.move',false);
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
 
         //-------------Grounds functions----------
@@ -253,10 +253,6 @@
 
     }
 
-    function setFriction (player, platform) {
-        player.reset(0,0);
-    }
-
     function fireBullet() {
         if (game.time.now > bulletTime) {
             bullet = bullets.getFirstExists(false);
@@ -294,22 +290,13 @@
         var ease = Phaser.Easing.Bounce.InOut;
         var autoStart = false;
         var yoyo = true;
-
         var shake = game.add.tween(ledge).to(properties, duration, ease, autoStart, 10, repeat, yoyo);
-
-        //shake.onComplete.addOnce(platformshake(player, ledge));
-
         shake.start();
-    }
-
-    function ledgeFall(ledge) {
-        ledge.body.immovable = false;
     }
 
     function collisionHandler(bullet,cyclist){
         bullet.kill();
         cyclist.kill();
-
         score += 20;
         scoreText.text = 'Score: ' + score;
     }
