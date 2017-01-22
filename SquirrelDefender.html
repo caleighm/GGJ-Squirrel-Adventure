@@ -28,6 +28,7 @@
 
     var player;
     var platforms;
+    var groundgrp;
     var cursors;
     var stars;
     var score = 0;
@@ -50,14 +51,16 @@
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        //  The platforms group contains the ground and the ledges we can jump on
+        //  The ground group contains the ground. The platforms group contains the platforms we can jump on
+        groundgrp = game.add.group();
         platforms = game.add.group();
 
-        //  We will enable physics for any object that is created in this group
+        //  We will enable physics for any object that is created in these groups
+        groundgrp.enableBody = true;
         platforms.enableBody = true;
 
         // Here we create the ground.
-        var ground = platforms.create(0, game.world.height - 30, 'ground');
+        var ground = groundgrp.create(0, game.world.height - 30, 'ground');
 
         //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
         ground.scale.setTo(10, 2);
@@ -65,7 +68,7 @@
         //  This stops it from falling away when you jump on it
         ground.body.immovable = true;
 
-        //  Now let's create ZILLIONS of ledges
+        //  Now let's create ZILLIONS of platforms
         var ledge = platforms.create(400, 400, 'ground');
         ledge.body.immovable = true;
         ledge = platforms.create(100, 100, 'ground');
@@ -90,6 +93,7 @@
         ledge.body.immovable = true;
 
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
+        groundgrp.physicsBodyType = Phaser.Physics.ARCADE;
 
         // The player and its settings
         player = game.add.sprite(500, game.world.height - 150, 'squirrel');
@@ -161,22 +165,15 @@
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-
-        /*//  Lives
-        lives = game.add.group();
-        game.add.text(game.world.width - 100, 10, 'Lives : ', { font: '34px Arial', fill: '#fff' });
-
-        //  Game over
-        stateText = game.add.text(game.world.centerX,game.world.centerY,' ', { font: '84px Arial', fill: '#fff' });
-        stateText.anchor.setTo(0.5, 0.5);
-        stateText.visible = false;*/
     }
 
     function update() {
 
         //  Collide the player and the stars with the platforms
-        game.physics.arcade.collide(player, platforms);
+        game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
         game.physics.arcade.collide(stars, platforms);
+        game.physics.arcade.collide(stars, groundgrp);
+        game.physics.arcade.collide(player, groundgrp);
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         game.physics.arcade.overlap(player, stars, collectStar, null, this);
@@ -298,6 +295,26 @@
         cyclists.callAll('animations.add','animations','left', [0, 1], 10, true);
         cyclists.callAll('animations.play', 'animations', 'left');
 
+    }
+
+    function ledgeShake(player, ledge) {
+        var rumbleOffset = 5;
+        var properties = { x: ledge.x - rumbleOffset };
+        var duration = 100;
+        var repeat = 4;
+        var ease = Phaser.Easing.Bounce.InOut;
+        var autoStart = false;
+        var yoyo = true;
+
+        var shake = game.add.tween(ledge).to(properties, duration, ease, autoStart, 10, repeat, yoyo);
+
+        //shake.onComplete.addOnce(platformshake(player, ledge));
+
+        shake.start();
+    }
+
+    function ledgeFall(ledge) {
+        ledge.body.immovable = false;
     }
 
     function collisionHandler(bullet,cyclist){
