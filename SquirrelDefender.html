@@ -22,12 +22,7 @@
         game.load.image('acorn', 'assets/acorn.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
-<<<<<<< HEAD
-        game.load.spritesheet('acorn', 'assets/acorn.png', 20, 23);
         game.load.spritesheet('poof', 'assets/poof2.png', 512, 512);
-=======
-        game.load.spritesheet('poof', 'assets/poof.png', 128, 128);
->>>>>>> 86b6cff2a5e61d0ba43d5b5bd921fe42bd63df2b
         game.load.audio('amok', ['assets/audio/amok.mp3', 'assets/audio/amok.ogg']);
         game.load.audio('amok', ['assets/audio/amok.mp3', 'assets/audio/amok.ogg']);
         game.load.audio('poof', ['assets/audio/poof.mp3', 'assets/audio/poof.ogg']);
@@ -337,11 +332,7 @@
         var cyclist = game.add.sprite(player.x + 500 + game.world.randomX, game.world.height - 90, 'bicycle');
         cyclist.isLeft = true;  // this might not be correct if cyclists can spawn to the right of the player...
         cyclist.anchor.setTo(.5,.5);
-<<<<<<< HEAD
-        cyclist.scale.setTo(3, 3);
-=======
         cyclist.scale.setTo(2.8, 2.8);
->>>>>>> 86b6cff2a5e61d0ba43d5b5bd921fe42bd63df2b
         cyclists.add(cyclist);
         cyclistlives++;
         cyclist.body.collideWorldBounds = true;
