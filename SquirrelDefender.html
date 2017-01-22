@@ -22,9 +22,19 @@
         game.load.image('acorn', 'assets/acorn.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
+<<<<<<< HEAD
         game.load.spritesheet('acorn', 'assets/acorn.png', 20, 23);
         game.load.spritesheet('poof', 'assets/poof2.png', 512, 512);
+=======
+        game.load.spritesheet('poof', 'assets/poof.png', 128, 128);
+>>>>>>> 86b6cff2a5e61d0ba43d5b5bd921fe42bd63df2b
         game.load.audio('amok', ['assets/audio/amok.mp3', 'assets/audio/amok.ogg']);
+        game.load.audio('amok', ['assets/audio/amok.mp3', 'assets/audio/amok.ogg']);
+        game.load.audio('poof', ['assets/audio/poof.mp3', 'assets/audio/poof.ogg']);
+        game.load.audio('chomp', ['assets/audio/chomp.mp3', 'assets/audio/chomp.ogg']);
+        game.load.audio('ping', ['assets/audio/bullet.mp3', 'assets/audio/bullet.ogg']);
+        game.load.audio('boing', ['assets/audio/boing.mp3', 'assets/audio/boing.ogg']);
+        game.load.audio('shake', ['assets/audio/shake.mp3', 'assets/audio/shake.ogg']);
     }
 
     var player;
@@ -44,38 +54,49 @@
     var bulletTime = 0;
     var fireButton;
     var cyclistlives = 0;
-    var maxCycle = 5;
+    var maxCycle = 3;
     var livesText;
     var lives = 5;
     var stateText;
+    var boing;
+    var poofsound;
+    var chompsound;
+    var bulletsound;
+    var shakesound;
+    var gamestate = false;
+    var bullet = null;
 
     function create() {
         //-------------world functions----------
-        game.world.setBounds(0, 0, 3500, this.game.height);
+        game.world.setBounds(0, 0, 3500, this.game.height + 100);
         outside = game.add.tileSprite(0, 0, this.game.world.width, this.game.world.height, 'background');
         outside.autoScroll(0, 0);
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
-        // Add music
+
+        //----------Add music----------
         var music = game.add.audio('amok');
         music.loop = true;
         music.play();
+        poofsound = game.add.audio('poof');
+        chompsound = game.add.audio('chomp');
+        bulletsound = game.add.audio('ping');
+        boing = game.add.audio('boing');
+        shakesound = game.add.audio('shake');
 
         //-------------Platform functions----------
         //  The platforms group contains the ground and the ledges we can jump on
         platforms = game.add.physicsGroup();
         //  We will enable physics for any object that is created in this group
         platforms.enableBody = true;
-        //platforms = game.add.physicsGroup();
-        //  Now let's create ZILLIONS of ledges
-        platforms.create(400, 400, 'platform');
-        platforms.create(100, 100, 'platform');
-        platforms.create(-150, 250, 'platform');
-        platforms.create(900, 325, 'platform');
+        platforms.create(-200, 570, 'platform');
+        platforms.create(250, 350, 'platform');
+        platforms.create(650, 350, 'platform');
+        platforms.create(900, 570, 'platform');
         platforms.create(1450, 400, 'platform');
         platforms.create(1700, 200, 'platform');
         platforms.create(2000, 350, 'platform');
-        platforms.create(2300, 100, 'platform');
+        //platforms.create(2300, 100, 'platform');
         platforms.create(2600, 400, 'platform');
         platforms.create(2950, 250, 'platform');
         platforms.create(3290, 370, 'platform');
@@ -93,6 +114,8 @@
         ground.scale.setTo(10, 2);
         grounds.setAll('body.immovable', true);
         grounds.physicsBodyType = Phaser.Physics.ARCADE;
+
+        //----------Player Functions----------
         // The player and its settings
         player = game.add.sprite(500, game.world.height - 500, 'squirrel');
         //  We need to enable physics on the player
@@ -110,19 +133,15 @@
         player.animations.add('dying', [28, 29, 30, 31, 32, 33, 34, 35, 36], 10, false);
         player.animations.add('dead', [36], 1, true);
         player.scale.setMagnitude(3);
+        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.5);
 
-
-        //  Finally some acorns to collect
+        //----------Acron Functions----------
         acorns = game.add.group();
         acorns.enableBody = true;
 
-        skyAcorns();
-
-        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.5);
-
         //-------------Texts----------
         //  The score
-        scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
         scoreText.fixedToCamera = true;
         scoreText.cameraOffset.setTo(16, 16);
 
@@ -132,9 +151,16 @@
         livesText.cameraOffset.setTo(1150, 20);
 
         // Gameover
+        //stateText = game.add.text(0,0,' ', { font: '84px Arial', fill: '#000' });
+
+        // -------------Game States-------------
         stateText = game.add.text(game.world.centerX+100,game.world.centerY,' ', { font: '84px Arial', fill: '#000' });
         stateText.anchor.setTo(0.5, 0.5);
-        stateText.visible = false;
+        stateText.visible = true;
+        stateText.fixedToCamera = true;
+        stateText.cameraOffset.setTo(600, 300);
+        stateText.text = " - Click to start - ";
+        stateText.visible = true;
 
         // Bullets
         bullets = game.add.group();
@@ -154,22 +180,39 @@
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+        //Start Game
+        game.input.onTap.addOnce(startGame,this);
     }
 
     function update() {
 
-        if (cyclists.countLiving() < maxCycle) {
+        if (gamestate === true) {
+            if (cyclists.countLiving() < maxCycle) {
                 createCyclists();
+            }
+            //  Collide the player and the acorns with the platforms
+            game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
+
+            //  Fire
+            if (fireButton.isDown && !bullets.getFirstAlive()) {
+                fireBullet();
+            }
         }
 
-        //  Collide the player and the acorns with the platforms
-        game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
+        else {
+            //  Collide the player and the acorns with the platforms
+            game.physics.arcade.collide(player, platforms);
+        }
+
+        //game.physics.arcade.collide(player, platforms);
         game.physics.arcade.collide(acorns, platforms);
         game.physics.arcade.collide(player, grounds);
         game.physics.arcade.collide(acorns, grounds);
         game.physics.arcade.collide(cyclists, grounds);
         //  Checks to see if the player overlaps with any of the acorns, if he does call the collectAcorn function
         game.physics.arcade.overlap(player, acorns, collectAcorn, null, this);
+
         function checkLanding() {
             if (!player.body.touching.down) {
                 player.animations.play('jump');
@@ -181,6 +224,7 @@
                 }, this);
             }
         }
+
         //  Reset the players velocity (movement)
         player.body.velocity.x = 0;
         followPlayer();
@@ -192,16 +236,16 @@
                 isDead = false;
             }
             else {
-                player.kill();
+                stateText.x = player.x;
+                stateText.y = player.y - 400;
                 cyclists.callAll('kill');
-
-                stateText.text=" GAME OVER \n Click to restart";
+                player.kill();
+                stateText.text = " GAME OVER \n Click to restart";
                 stateText.visible = true;
                 //the "click to restart" handler
                 game.input.onTap.addOnce(restart,this);
-                }
             }
-        else if (isDying) {
+        } else if (isDying) {
             player.animations.play('dying');
             player.animations.currentAnim.onComplete.add(function () {
                 isDead = true;
@@ -213,7 +257,8 @@
             //followPlayer();
             if (cursors.up.isDown && player.body.touching.down) {
                 //  Allow the player to jump if they are touching the ground.
-                player.body.velocity.y = -800;
+                player.body.velocity.y = -700;
+                boing.play();
                 isGrounded = false;
             }
             if(player.body.touching.down) {    //checkLanding();;
@@ -225,12 +270,12 @@
             //  Move to the right
             player.body.velocity.x = 300;
 
-            //followPlayer();
             if (cursors.up.isDown && player.body.touching.down) {
                 //  Allow the player to jump if they are touching the ground.
-                player.body.velocity.y = -800;
+                player.body.velocity.y = -700;
                 isGrounded = false;
                 player.animations.play('jump');
+                boing.play();
             }
             if(player.body.touching.down) {    //checkLanding();;
                 player.animations.play('right');
@@ -239,7 +284,8 @@
             }
         } else if (cursors.up.isDown && player.body.touching.down) {
             //  Allow the player to jump if they are touching the ground.
-            player.body.velocity.y = -800;
+            player.body.velocity.y = -700;
+            boing.play();
             isGrounded = false;
         } else if (!player.body.touching.down || !isGrounded) {
             checkLanding();
@@ -256,13 +302,8 @@
             isShaken = false;
         }
 
-        //  Fire
-        if (fireButton.isDown) {
-            fireBullet();
-        }
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
-
     }
 
     function collectAcorn (player, acorn) {
@@ -271,6 +312,7 @@
         //  Add and update the score
         score += 10;
         scoreText.text = 'Score: ' + score;
+        chompsound.play();
     }
 
     function fireBullet() {
@@ -278,6 +320,7 @@
             bullet = bullets.getFirstExists(false);
             if (bullet) {
                 bullet.reset(player.x + 40, player.y + 57);
+                bulletsound.play();
                 if (cursors.left.isDown) {
                     bullet.body.velocity.x = -400;
                     bulletTime = game.time.now + 200;
@@ -291,10 +334,14 @@
     }
 
     function createCyclists() {
-        var cyclist = game.add.sprite(player.x + game.world.randomX, game.world.height - 90, 'bicycle');
+        var cyclist = game.add.sprite(player.x + 500 + game.world.randomX, game.world.height - 90, 'bicycle');
         cyclist.isLeft = true;  // this might not be correct if cyclists can spawn to the right of the player...
         cyclist.anchor.setTo(.5,.5);
+<<<<<<< HEAD
         cyclist.scale.setTo(3, 3);
+=======
+        cyclist.scale.setTo(2.8, 2.8);
+>>>>>>> 86b6cff2a5e61d0ba43d5b5bd921fe42bd63df2b
         cyclists.add(cyclist);
         cyclistlives++;
         cyclist.body.collideWorldBounds = true;
@@ -313,7 +360,6 @@
             radians = game.physics.arcade.angleBetween(cyclist, player);
             degrees = radians * (180 / Math.PI);
 
-
             if (cyclist.body.velocity.x < 0 && !cyclist.isLeft) {
                 cyclist.isLeft = true;
                 cyclist.scale.x *= -1;
@@ -323,14 +369,15 @@
                 cyclist.isLeft = false;
                 cyclist.scale.x *= -1;
             }
-            game.physics.arcade.velocityFromAngle(degrees, 400, cyclist.body.velocity);
+            game.physics.arcade.velocityFromAngle(degrees, 100, cyclist.body.velocity);
             cyclist = cyclists.getFirstDead();
         }
     }
 
     function ledgeShake(player, ledge) {
-        if (! isShaken) {
+        if (!isShaken) {
             isShaken = true;
+            shakesound.play();
             var rumbleOffset = 8;
             var properties = {x: ledge.x - rumbleOffset};
             var duration = 100;
@@ -368,9 +415,7 @@
     function poofMaker(x, y) {
         var smooke = game.add.sprite(x, y-100, 'poof');
         smooke.scale.setTo(.25,.25);
-        //deadGroup = game.add.group();
         var anim = smooke.animations.add('poofing',
-            //[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],
             [0,1,4,5,2,6,3,7,8,12,13],
             10, false, true);
         anim.killOnComplete = true;
@@ -381,11 +426,12 @@
         poofMaker(cyclist.x, cyclist.y);
         bullet.kill();
         cyclist.kill();
+        poofsound.play();
         score += 20;
         scoreText.text = 'Score: ' + score;
-        cyclist.revive();
-        cyclist.x = player.x + game.world.randomX;
-        cyclist.y = game.world.height - 90;
+        //cyclist.revive();
+        //cyclist.x = player.x + game.world.randomX;
+        //cyclist.y = game.world.height - 90;
     }
 
     function playerCollisionHandler(player,cyclist){
@@ -410,6 +456,13 @@
         }
     }
 
+    //Start Game
+    function startGame(){
+        stateText.visible = false;
+        gamestate = true;
+        skyAcorns();
+    }
+
     //  Restart the game
     function restart () {
         lives = 5;
@@ -424,7 +477,7 @@
         skyAcorns();
 
         //revives the player
-        player.revive(500, game.world.height - 500);
+        player.revive(400, game.world.height - 200);
         //hides the text
         stateText.visible = false;
     }
