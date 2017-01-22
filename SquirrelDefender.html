@@ -24,6 +24,7 @@
         game.load.spritesheet('skater', 'assets/skater.png', 76, 150);
         game.load.spritesheet('acorn', 'assets/acorn.png', 20, 23);
     }
+
     var player;
     var isGrounded = false;
     var isDying = false;
@@ -39,7 +40,8 @@
     var bullets;
     var bulletTime = 0;
     var fireButton;
-
+    var cyclistlives = 0;
+    var maxCycle = 5;
     var livesText;
     var lives = 5;
 
@@ -139,19 +141,21 @@
         cyclists = game.add.group();
         cyclists.enableBody = true;
         cyclists.physicsBodyType = Phaser.Physics.ARCADE;
-        cyclists.setAll('outOfBoundsKill', true);
-        cyclists.setAll('checkWorldBounds', true);
-
+        //cyclists.setAll('outOfBoundsKill', false);
+        //cyclists.setAll('checkWorldBounds', false);
         createCyclists();
 
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-
-        //game.input.onDown.add(deathToggle, this);
     }
 
     function update() {
+
+        if (cyclists.countLiving() < maxCycle) {
+                createCyclists();
+        }
+
         //  Collide the player and the acorns with the platforms
         game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
         game.physics.arcade.collide(acorns, platforms);
@@ -272,18 +276,21 @@
     }
 
     function createCyclists() {
-        for (var i = 0; i <3; i++){
-            var cyclist = game.add.sprite(game.world.randomX, game.world.height - 90, 'bicycle');
-            cyclist.scale.setTo(2, 2);
-            cyclists.add(cyclist);
-        }
-        game.add.tween(cyclists).to({x:cyclists.x-2},2000, Phaser.Easing.Default, true, 0, 100, true);
+        var cyclist = game.add.sprite(player.x + game.world.randomX, game.world.height - 90, 'bicycle');
+        cyclist.scale.setTo(2, 2);
+        cyclists.add(cyclist);
+        cyclistlives++;
+        cyclist.body.collideWorldBounds = true;
+        cyclist.body.bounce.setTo(1);
+        game.physics.arcade.velocityFromRotation(cyclist.rotation, -100, cyclist.body.velocity);
+
+        //game.add.tween(cyclists).to({x:cyclists.x-5},2000, Phaser.Easing.Default, true, 0, 100, true);
+
         cyclists.callAll('animations.add','animations','left', [0, 1], 10, true);
         cyclists.callAll('animations.play', 'animations', 'left');
     }
 
     function followPlayer() {
-
         //cyclists.forEach(function(enemy) {
         cyclist = cyclists.getFirstAlive();
 
@@ -338,7 +345,11 @@
         cyclist.kill();
         score += 20;
         scoreText.text = 'Score: ' + score;
+        cyclist.revive();
+        cyclist.x = player.x + game.world.randomX;
+        cyclist.y = game.world.height - 90;
     }
+
     function playerCollisionHandler(player,cyclist){
         if (!isDying) {
             lives -= 1;
