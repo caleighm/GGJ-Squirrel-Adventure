@@ -19,10 +19,12 @@
         game.load.image('background', 'assets/background.png');
         game.load.image('ground', 'assets/groundv.png');
         game.load.image('platform', 'assets/platformv.png');
+        game.load.image('acorn', 'assets/acorn.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
         game.load.spritesheet('acorn', 'assets/acorn.png', 20, 23);
         game.load.spritesheet('poof', 'assets/poof.png', 128, 128);
+        game.load.audio('amok', ['assets/audio/amok.mp3', 'assets/audio/amok.ogg']);
     }
 
     var player;
@@ -45,6 +47,7 @@
     var maxCycle = 5;
     var livesText;
     var lives = 5;
+    var stateText;
 
     function create() {
         //-------------world functions----------
@@ -53,6 +56,10 @@
         outside.autoScroll(0, 0);
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
+        // Add music
+        var music = game.add.audio('amok');
+        music.loop = true;
+        music.play();
 
         //-------------Platform functions----------
         //  The platforms group contains the ground and the ledges we can jump on
@@ -109,27 +116,25 @@
         acorns = game.add.group();
         acorns.enableBody = true;
 
-        //  Make acorns fall from the sky
-        for (var i = 0; i < 50; i++)
-        {
-            //  Create an acorn inside of the 'acorns' group
-            var acorn = acorns.create(i * 800 * Math.random(), 0, 'acorn');
-            //  Let gravity do its thing
-            acorn.body.gravity.y = 200;
-            //  This just gives each star a slightly random bounce value
-            acorn.body.bounce.y = 0.4 + Math.random() * 0.2;
-        }
+        skyAcorns();
 
         game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.5);
+
+        //-------------Texts----------
         //  The score
         scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
         scoreText.fixedToCamera = true;
         scoreText.cameraOffset.setTo(16, 16);
 
-        // Texts
+        // Lives
         livesText = game.add.text(500, 550, 'Lives: 5' , { fontSize: '32px', fill: "#000", align: "left" });
         livesText.fixedToCamera = true;
         livesText.cameraOffset.setTo(1150, 20);
+
+        // Gameover
+        stateText = game.add.text(game.world.centerX+100,game.world.centerY,' ', { font: '84px Arial', fill: '#000' });
+        stateText.anchor.setTo(0.5, 0.5);
+        stateText.visible = false;
 
         // Bullets
         bullets = game.add.group();
@@ -140,6 +145,7 @@
         bullets.setAll('anchor.y', 1);
         bullets.setAll('outOfBoundsKill', true);
         bullets.setAll('checkWorldBounds', true);
+
         // Enemies
         cyclists = game.add.group();
         cyclists.enableBody = true;
@@ -178,7 +184,6 @@
         player.body.velocity.x = 0;
         followPlayer();
 
-
         if (isDead){
             player.animations.play('dead');
             if (!lives == 0) {
@@ -186,9 +191,16 @@
                 isDead = false;
             }
             else {
-                game.pause();
+                player.kill();
+                cyclists.callAll('kill');
+
+                stateText.text=" GAME OVER \n Click to restart";
+                stateText.visible = true;
+                //the "click to restart" handler
+                game.input.onTap.addOnce(restart,this);
+                }
             }
-        } else if (isDying) {
+        else if (isDying) {
             player.animations.play('dying');
             player.animations.currentAnim.onComplete.add(function () {
                 isDead = true;
@@ -238,15 +250,18 @@
             player.animations.play('idle');
         }
 
-        //  Check if player is off the ground and if so, reset isShaken
-        if (!player.body.touching.down && !player.body.touching.left && !player.body.touching.right) isShaken = false;
+        //  Check if player is in the air and if so, reset isShaken
+        if (!player.body.touching.down && !player.body.touching.left && !player.body.touching.right) {
+            isShaken = false;
+        }
 
-        //Fire
+        //  Fire
         if (fireButton.isDown) {
             fireBullet();
         }
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
+
     }
 
     function collectAcorn (player, acorn) {
@@ -324,22 +339,29 @@
             var yoyo = true;
             var shake = game.add.tween(ledge).to(properties, duration, ease, autoStart, 100, repeat, yoyo);
             acornFalls(ledge);
+
+            // shake.onComplete.addOnce(ledgeFall(ledge));
+
             shake.start();
         }
     }
 
+    // TODO: this should get called on complete of ledgeShaken, but it breaks
     function ledgeFall(ledge) {
         ledge.body.immovable = false;
     }
 
+    //  Randomly generate an acorn fall from a ledge
     function acornFalls(ledge) {
-        var acorn = game.add.sprite(ledge.x + 100, ledge.y+10, 'acorn');
-        acorns.add(acorn);
+        if (Math.random() > 0.5) {
+            var acorn = game.add.sprite(ledge.x + 100, ledge.y + 10, 'acorn');
+            acorns.add(acorn);
 
-        //  Let gravity do its thing
-        acorn.body.gravity.y = 300;
-        //  This just gives each acorn a slightly random bounce value
-        acorn.body.bounce.y = 0.4 + Math.random() * 0.2;
+            //  Let gravity do its thing
+            acorn.body.gravity.y = 300;
+            //  This just gives each acorn a slightly random bounce value
+            acorn.body.bounce.y = 0.4 + Math.random() * 0.2;
+        }
     }
 
     function poofMaker(x, y) {
@@ -369,6 +391,37 @@
         poofMaker(cyclist.x, cyclist.y);
         cyclist.kill();
         isDying = true;
+    }
+
+    function skyAcorns() {
+        //  Make acorns fall from the sky
+        for (var i = 0; i < 50; i++)         {
+            //  Create an acorn inside of the 'acorns' group
+            var acorn = acorns.create(i * 800 * Math.random(), 0, 'acorn');
+            //  Let gravity do its thing
+            acorn.body.gravity.y = 200;
+            //  This just gives each acorn a slightly random bounce value
+            acorn.body.bounce.y = 0.4 + Math.random() * 0.2;
+        }
+    }
+
+    //  Restart the game
+    function restart () {
+        lives = 5;
+        score = 0;
+        isDead = false;
+        isDying = false;
+        cyclistlives = 0;
+        bulletTime = 0;
+        maxCycle = 5;
+
+        createCyclists();
+        skyAcorns();
+
+        //revives the player
+        player.revive(500, game.world.height - 500);
+        //hides the text
+        stateText.visible = false;
     }
 
 </script>
