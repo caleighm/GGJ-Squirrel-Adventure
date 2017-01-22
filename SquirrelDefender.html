@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
 	<meta charset="UTF-8" />
-    <title>Phaser - Making your first game, part 9</title>
+    <title>Squirrel Defender</title>
 	<script type="text/javascript" src="lib/js/phaser.min.js"></script>
     <style type="text/css">
         body {
@@ -19,7 +19,8 @@
     function preload() {
         game.load.image('bullet', 'assets/star.png');
         game.load.image('background', 'assets/background.png');
-        game.load.image('ground', 'assets/platform.png');
+        game.load.image('ground', 'assets/groundv.png');
+        game.load.image('platform', 'assets/platformv.png');
         game.load.image('star', 'assets/star.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
@@ -27,6 +28,10 @@
     }
 
     var player;
+    var isGrounded = false;
+    var isDying = false;
+    var isDead = false;
+    var grounds;
     var platforms;
     var groundgrp;
     var cursors;
@@ -34,32 +39,54 @@
     var score = 0;
     var scoreText;
     var outside;
-
     var bullets;
     var bulletTime = 0;
     var fireButton;
 
     function create() {
-        //world functions
+        //-------------world functions----------
         game.world.setBounds(0, 0, 3500, this.game.height);
-
-        outside = game.add.tileSprite(0, 0, this.game.world.width,
-            this.game.world.height, 'background');
-
+        outside = game.add.tileSprite(0, 0, this.game.world.width, this.game.world.height, 'background');
         outside.autoScroll(0, 0);
-
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
+/*
         //  The ground group contains the ground. The platforms group contains the platforms we can jump on
         groundgrp = game.add.group();
         platforms = game.add.group();
 
         //  We will enable physics for any object that is created in these groups
-        groundgrp.enableBody = true;
-        platforms.enableBody = true;
+        groundgrp.enableBody = true;*/
 
+        //-------------Platform functions----------
+        //  The platforms group contains the ground and the ledges we can jump on
+        platforms = game.add.physicsGroup();
+        //  We will enable physics for any object that is created in this group
+
+        platforms.enableBody = true;
+        //platforms = game.add.physicsGroup();
+        //  Now let's create ZILLIONS of ledges
+        platforms.create(400, 400, 'platform');
+        platforms.create(100, 100, 'platform');
+        platforms.create(-150, 250, 'platform');
+        platforms.create(900, 325, 'platform');
+        platforms.create(1450, 400, 'platform');
+        platforms.create(1700, 200, 'platform');
+        platforms.create(2000, 350, 'platform');
+        platforms.create(2300, 100, 'platform');
+        platforms.create(2600, 400, 'platform');
+        platforms.create(2950, 250, 'platform');
+        platforms.create(3290, 370, 'platform');
+
+        platforms.setAll('body.immovable', true);
+        platforms.physicsBodyType = Phaser.Physics.ARCADE;
+
+        //-------------Grounds functions----------
+        grounds = game.add.physicsGroup();
+        grounds.enableBody = true;
         // Here we create the ground.
+/*
         var ground = groundgrp.create(0, game.world.height - 30, 'ground');
 
         //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
@@ -94,9 +121,15 @@
 
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
         groundgrp.physicsBodyType = Phaser.Physics.ARCADE;
+*/
+        var ground = grounds.create(0, game.world.height - 30, 'ground');
+        //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
+        ground.scale.setTo(10, 2);
+        grounds.setAll('body.immovable', true);
+        grounds.physicsBodyType = Phaser.Physics.ARCADE;
 
         // The player and its settings
-        player = game.add.sprite(500, game.world.height - 150, 'squirrel');
+        player = game.add.sprite(500, game.world.height - 500, 'squirrel');
 
         //  We need to enable physics on the player
         game.physics.arcade.enable(player);
@@ -114,6 +147,8 @@
         player.animations.add('jump', [8], 1, true);
         player.animations.add('idle', [9, 10, 9, 11], 4, true);
         player.animations.add('land', [7], 5, false);
+        player.animations.add('dying', [28, 29, 30, 31, 32, 33, 34, 35, 36], 10, false);
+        player.animations.add('dead', [36], 1, true);
 
         player.scale.setMagnitude(3);
 
@@ -175,6 +210,9 @@
         game.physics.arcade.collide(stars, groundgrp);
         game.physics.arcade.collide(player, groundgrp);
 
+        game.physics.arcade.collide(player, grounds);
+        game.physics.arcade.collide(stars, grounds);
+
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         game.physics.arcade.overlap(player, stars, collectStar, null, this);
 
@@ -185,13 +223,22 @@
             } else if (!isGrounded) {
                 //isGrounded = true;
                 player.animations.play('land');
-                player.animations.currentAnim.onComplete.add(function () {isGrounded = true;}, this);
+                player.animations.currentAnim.onComplete.add(function () {
+                    isGrounded = true;
+                }, this);
             }
         }
 
         //  Reset the players velocity (movement)
         player.body.velocity.x = 0;
-        if (cursors.left.isDown) {
+        if (isDead) {
+            player.animations.play('dead');
+        } else if (isDying) {
+            player.animations.play('dying');
+            player.animations.currentAnim.onComplete.add(function () {
+                isDead = true;
+                isDying = false;}, this);
+        } else if (cursors.left.isDown) {
             //  Move to the left
             player.body.velocity.x = -300;
             if (cursors.up.isDown && player.body.touching.down) {
@@ -214,23 +261,23 @@
                 player.animations.play('jump');
             }
             if(player.body.touching.down) {    //checkLanding();;
-                    player.animations.play('right');
-                } else {
-                    player.animations.play('jump');
-                }
+                player.animations.play('right');
+            } else {
+                player.animations.play('jump');
+            }
         } else if (cursors.up.isDown && player.body.touching.down) {
             //  Allow the player to jump if they are touching the ground.
             player.body.velocity.y = -800;
             isGrounded = false;
         } else if (!player.body.touching.down || !isGrounded) {
-                checkLanding();
+            checkLanding();
         } else if (!isGrounded) {
             //isGrounded = true;
             player.animations.play('land');
             player.animations.currentAnim.onComplete.add(function () {isGrounded = true;}, this);
         } else {
-                //  Stand still
-                player.animations.play('idle');
+            //  Stand still
+            player.animations.play('idle');
         }
 
 
@@ -242,7 +289,6 @@
 
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
-
     }
 
     function collectStar (player, star) {
@@ -254,6 +300,10 @@
         score += 10;
         scoreText.text = 'Score: ' + score;
 
+    }
+
+    function setFriction (player, platform) {
+        player.reset(0,0);
     }
 
     function fireBullet() {
@@ -276,25 +326,13 @@
 
     function createCyclists() {
         for (var i = 0; i <50; i++){
-            var cyclist = game.add.sprite(game.world.randomX, player.y + 60, 'bicycle');
+            var cyclist = game.add.sprite(game.world.randomX, game.world.height - 90, 'bicycle');
             cyclist.scale.setTo(2, 2);
-
-            //cyclist.add.tween(cyclist).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
             cyclists.add(cyclist);
         }
-
-        //cyclists.scale.set(20,20);
-
-       /* cyclists.forEach(function(child){
-            game.add.tween(child.scale).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
-        });
-*/
         game.add.tween(cyclists).to({x:cyclists.x-5},2000, Phaser.Easing.Default, true, 0, 100, true);
-
-
         cyclists.callAll('animations.add','animations','left', [0, 1], 10, true);
         cyclists.callAll('animations.play', 'animations', 'left');
-
     }
 
     function ledgeShake(player, ledge) {
@@ -327,6 +365,7 @@
 
     function playerCollisionHandler(player,cyclist){
         cyclist.kill();
+        isDying = true;
     }
 
 </script>
