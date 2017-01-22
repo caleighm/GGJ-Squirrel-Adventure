@@ -31,45 +31,30 @@
     var isGrounded = false;
     var isDying = false;
     var isDead = false;
-
+    var grounds;
     var platforms;
     var cursors;
     var stars;
     var score = 0;
     var scoreText;
     var outside;
-
     var bullets;
     var bulletTime = 0;
     var fireButton;
 
     function create() {
-        //world functions
+        //-------------world functions----------
         game.world.setBounds(0, 0, 3500, this.game.height);
-
-        outside = game.add.tileSprite(0, 0, this.game.world.width,
-            this.game.world.height, 'background');
-
+        outside = game.add.tileSprite(0, 0, this.game.world.width, this.game.world.height, 'background');
         outside.autoScroll(0, 0);
-
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
+        //-------------Platform functions----------
         //  The platforms group contains the ground and the ledges we can jump on
-        platforms = game.add.group();
-
+        platforms = game.add.physicsGroup();
         //  We will enable physics for any object that is created in this group
         platforms.enableBody = true;
-
-        // Here we create the ground.
-        var ground = platforms.create(0, game.world.height - 30, 'ground');
-
-        //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-        ground.scale.setTo(10, 2);
-
-        //  This stops it from falling away when you jump on it
-        ground.body.immovable = true;
-
         //platforms = game.add.physicsGroup();
         //  Now let's create ZILLIONS of ledges
         platforms.create(400, 400, 'platform');
@@ -85,8 +70,17 @@
         platforms.create(3290, 370, 'platform');
 
         platforms.setAll('body.immovable', true);
-
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
+
+        //-------------Grounds functions----------
+        grounds = game.add.physicsGroup();
+        grounds.enableBody = true;
+        // Here we create the ground.
+        var ground = grounds.create(0, game.world.height - 30, 'ground');
+        //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
+        ground.scale.setTo(10, 2);
+        grounds.setAll('body.immovable', true);
+        grounds.physicsBodyType = Phaser.Physics.ARCADE;
 
         // The player and its settings
         player = game.add.sprite(500, game.world.height - 500, 'squirrel');
@@ -177,6 +171,9 @@
         game.physics.arcade.collide(player, platforms);
         game.physics.arcade.collide(stars, platforms);
 
+        game.physics.arcade.collide(player, grounds);
+        game.physics.arcade.collide(stars, grounds);
+
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         game.physics.arcade.overlap(player, stars, collectStar, null, this);
 
@@ -253,7 +250,6 @@
 
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
-
     }
 
     function collectStar (player, star) {
@@ -265,6 +261,10 @@
         score += 10;
         scoreText.text = 'Score: ' + score;
 
+    }
+
+    function setFriction (player, platform) {
+        player.reset(0,0);
     }
 
     function fireBullet() {
@@ -289,23 +289,11 @@
         for (var i = 0; i <50; i++){
             var cyclist = game.add.sprite(game.world.randomX, game.world.height - 90, 'bicycle');
             cyclist.scale.setTo(2, 2);
-
-            //cyclist.add.tween(cyclist).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
             cyclists.add(cyclist);
         }
-
-        //cyclists.scale.set(20,20);
-
-        /* cyclists.forEach(function(child){
-         game.add.tween(child.scale).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
-         });
-         */
         game.add.tween(cyclists).to({x:cyclists.x-5},2000, Phaser.Easing.Default, true, 0, 100, true);
-
-
         cyclists.callAll('animations.add','animations','left', [0, 1], 10, true);
         cyclists.callAll('animations.play', 'animations', 'left');
-
     }
 
     function collisionHandler(bullet,cyclist){
