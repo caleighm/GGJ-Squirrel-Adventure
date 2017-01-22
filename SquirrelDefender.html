@@ -21,11 +21,12 @@
         game.load.image('platform', 'assets/platformv.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
-        game.load.spritesheet('skater', 'assets/skater.png', 76, 150);
         game.load.spritesheet('acorn', 'assets/acorn.png', 20, 23);
+        game.load.spritesheet('poof', 'assets/poof.png', 128, 128);
     }
 
     var player;
+    var poofs;
     var isGrounded = false;
     var isDying = false;
     var isDead = false;
@@ -75,6 +76,8 @@
         platforms.setAll('body.moves', false);
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
 
+        //poofs = game.add.group();
+
         //-------------Grounds functions----------
         grounds = game.add.physicsGroup();
         grounds.enableBody = true;
@@ -100,6 +103,7 @@
         player.animations.add('dying', [28, 29, 30, 31, 32, 33, 34, 35, 36], 10, false);
         player.animations.add('dead', [36], 1, true);
         player.scale.setMagnitude(3);
+
 
         //  Finally some acorns to collect
         acorns = game.add.group();
@@ -338,7 +342,16 @@
         acorn.body.bounce.y = 0.4 + Math.random() * 0.2;
     }
 
+    function poofMaker(x, y) {
+        var smooke = game.add.sprite(x, y-100, 'poof');
+        smooke.animations.add('poofing',
+            [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],
+            20, true);
+        smooke.animations.play('poofing');
+    }
+
     function collisionHandler(bullet,cyclist){
+        poofMaker(cyclist.x, cyclist.y);
         bullet.kill();
         cyclist.kill();
         score += 20;
@@ -353,6 +366,7 @@
             lives -= 1;
             livesText.text = 'Lives: ' + lives;
         }
+        poofMaker(cyclist.x, cyclist.y);
         cyclist.kill();
         isDying = true;
     }
