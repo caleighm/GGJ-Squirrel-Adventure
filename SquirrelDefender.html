@@ -31,7 +31,6 @@
     var isShaken = false;
     var grounds;
     var platforms;
-    var groundgrp;
     var cursors;
     var stars;
     var score = 0;
@@ -40,6 +39,10 @@
     var bullets;
     var bulletTime = 0;
     var fireButton;
+
+    var livesText;
+    var lives = 5;
+
     function create() {
         //-------------world functions----------
         game.world.setBounds(0, 0, 3500, this.game.height);
@@ -47,6 +50,7 @@
         outside.autoScroll(0, 0);
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
+
         //-------------Platform functions----------
         //  The platforms group contains the ground and the ledges we can jump on
         platforms = game.add.physicsGroup();
@@ -114,6 +118,12 @@
         scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
         scoreText.fixedToCamera = true;
         scoreText.cameraOffset.setTo(16, 16);
+
+        // Texts
+        livesText = game.add.text(500, 550, 'Lives: 5' , { fontSize: '32px', fill: "#000", align: "left" });
+        livesText.fixedToCamera = true;
+        livesText.cameraOffset.setTo(1150, 20);
+
         // Bullets
         bullets = game.add.group();
         bullets.enableBody = true;
@@ -138,8 +148,6 @@
         //  Collide the player and the stars with the platforms
         game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
         game.physics.arcade.collide(stars, platforms);
-        game.physics.arcade.collide(stars, groundgrp);
-        game.physics.arcade.collide(player, groundgrp);
         game.physics.arcade.collide(player, grounds);
         game.physics.arcade.collide(stars, grounds);
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
@@ -224,9 +232,7 @@
         score += 10;
         scoreText.text = 'Score: ' + score;
     }
-    function setFriction (player, platform) {
-        player.reset(0,0);
-    }
+
     function fireBullet() {
         if (game.time.now > bulletTime) {
             bullet = bullets.getFirstExists(false);
@@ -244,7 +250,7 @@
         }
     }
     function createCyclists() {
-        for (var i = 0; i <50; i++){
+        for (var i = 0; i <10; i++){
             var cyclist = game.add.sprite(game.world.randomX, game.world.height - 90, 'bicycle');
             cyclist.scale.setTo(2, 2);
             cyclists.add(cyclist);
@@ -265,9 +271,6 @@
             var yoyo = true;
             var shake = game.add.tween(ledge).to(properties, duration, ease, autoStart, 0, repeat, yoyo);
             shake.start();
-            //shake.onComplete.add(function () {
-            //    isShaken = false;
-            //}, this);
         }
     }
     function ledgeFall(ledge) {
@@ -281,9 +284,12 @@
         scoreText.text = 'Score: ' + score;
     }
     function playerCollisionHandler(player,cyclist){
+        lives -=1;
+        livesText.text = 'Lives: ' + lives;
         cyclist.kill();
         isDying = true;
     }
+
 </script>
 
 </body>
