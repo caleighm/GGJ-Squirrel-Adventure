@@ -27,6 +27,10 @@
     }
 
     var player;
+    var isGrounded = false;
+    var isDying = false;
+    var isDead = false;
+
     var platforms;
     var cursors;
     var stars;
@@ -92,7 +96,7 @@
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
 
         // The player and its settings
-        player = game.add.sprite(500, game.world.height - 150, 'squirrel');
+        player = game.add.sprite(500, game.world.height - 500, 'squirrel');
 
         //  We need to enable physics on the player
         game.physics.arcade.enable(player);
@@ -111,6 +115,7 @@
         player.animations.add('idle', [9, 10, 9, 11], 4, true);
         player.animations.add('land', [7], 5, false);
         player.animations.add('dying', [28, 29, 30, 31, 32, 33, 34, 35, 36], 10, false);
+        player.animations.add('dead', [36], 1, true);
 
         player.scale.setMagnitude(3);
 
@@ -189,13 +194,22 @@
             } else if (!isGrounded) {
                 //isGrounded = true;
                 player.animations.play('land');
-                player.animations.currentAnim.onComplete.add(function () {isGrounded = true;}, this);
+                player.animations.currentAnim.onComplete.add(function () {
+                    isGrounded = true;
+                }, this);
             }
         }
 
         //  Reset the players velocity (movement)
         player.body.velocity.x = 0;
-        if (cursors.left.isDown) {
+        if (isDead) {
+            player.animations.play('dead');
+        } else if (isDying) {
+            player.animations.play('dying');
+            player.animations.currentAnim.onComplete.add(function () {
+                isDead = true;
+                isDying = false;}, this);
+        } else if (cursors.left.isDown) {
             //  Move to the left
             player.body.velocity.x = -300;
             if (cursors.up.isDown && player.body.touching.down) {
@@ -218,23 +232,23 @@
                 player.animations.play('jump');
             }
             if(player.body.touching.down) {    //checkLanding();;
-                    player.animations.play('right');
-                } else {
-                    player.animations.play('jump');
-                }
+                player.animations.play('right');
+            } else {
+                player.animations.play('jump');
+            }
         } else if (cursors.up.isDown && player.body.touching.down) {
             //  Allow the player to jump if they are touching the ground.
             player.body.velocity.y = -800;
             isGrounded = false;
         } else if (!player.body.touching.down || !isGrounded) {
-                checkLanding();
+            checkLanding();
         } else if (!isGrounded) {
             //isGrounded = true;
             player.animations.play('land');
             player.animations.currentAnim.onComplete.add(function () {isGrounded = true;}, this);
         } else {
-                //  Stand still
-                player.animations.play('idle');
+            //  Stand still
+            player.animations.play('idle');
         }
 
 
@@ -280,7 +294,7 @@
 
     function createCyclists() {
         for (var i = 0; i <50; i++){
-            var cyclist = game.add.sprite(game.world.randomX, player.y + 60, 'bicycle');
+            var cyclist = game.add.sprite(game.world.randomX, game.world.height - 90, 'bicycle');
             cyclist.scale.setTo(2, 2);
 
             //cyclist.add.tween(cyclist).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
@@ -289,10 +303,10 @@
 
         //cyclists.scale.set(20,20);
 
-       /* cyclists.forEach(function(child){
-            game.add.tween(child.scale).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
-        });
-*/
+        /* cyclists.forEach(function(child){
+         game.add.tween(child.scale).to( { x: 2, y: 2 }, 1000, Phaser.Easing.Default, true);
+         });
+         */
         game.add.tween(cyclists).to({x:cyclists.x-5},2000, Phaser.Easing.Default, true, 0, 100, true);
 
 
@@ -311,6 +325,7 @@
 
     function playerCollisionHandler(player,cyclist){
         cyclist.kill();
+        isDying = true;
     }
 
 </script>
