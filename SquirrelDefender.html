@@ -2,7 +2,7 @@
 <html lang="en"> 
 <head> 
 	<meta charset="UTF-8" />
-    <title>Phaser - Making your first game, part 9</title>
+    <title>Squirrel Defender</title>
 	<script type="text/javascript" src="lib/js/phaser.min.js"></script>
     <style type="text/css">
         body {
@@ -19,7 +19,8 @@
     function preload() {
         game.load.image('bullet', 'assets/star.png');
         game.load.image('background', 'assets/background.png');
-        game.load.image('ground', 'assets/platform.png');
+        game.load.image('ground', 'assets/groundv.png');
+        game.load.image('platform', 'assets/platformv.png');
         game.load.image('star', 'assets/star.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
@@ -69,29 +70,21 @@
         //  This stops it from falling away when you jump on it
         ground.body.immovable = true;
 
+        //platforms = game.add.physicsGroup();
         //  Now let's create ZILLIONS of ledges
-        var ledge = platforms.create(400, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(100, 100, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(-150, 250, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(900, 325, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(1450, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(1700, 200, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2000, 350, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2300, 100, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2600, 400, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(2950, 250, 'ground');
-        ledge.body.immovable = true;
-        ledge = platforms.create(3290, 370, 'ground');
-        ledge.body.immovable = true;
+        platforms.create(400, 400, 'platform');
+        platforms.create(100, 100, 'platform');
+        platforms.create(-150, 250, 'platform');
+        platforms.create(900, 325, 'platform');
+        platforms.create(1450, 400, 'platform');
+        platforms.create(1700, 200, 'platform');
+        platforms.create(2000, 350, 'platform');
+        platforms.create(2300, 100, 'platform');
+        platforms.create(2600, 400, 'platform');
+        platforms.create(2950, 250, 'platform');
+        platforms.create(3290, 370, 'platform');
+
+        platforms.setAll('body.immovable', true);
 
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
 
