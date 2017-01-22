@@ -145,6 +145,8 @@
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+        //game.input.onDown.add(deathToggle, this);
     }
     function update() {
         //  Collide the player and the acorns with the platforms
@@ -168,13 +170,22 @@
         }
         //  Reset the players velocity (movement)
         player.body.velocity.x = 0;
+
         if (isDead) {
             player.animations.play('dead');
+            if (!lives == 0) {
+                player.revive();
+                isDead = false;
+            }
+            else {
+                game.pause();
+            }
         } else if (isDying) {
             player.animations.play('dying');
             player.animations.currentAnim.onComplete.add(function () {
                 isDead = true;
-                isDying = false;}, this);
+                isDying = false;
+            }, this);
         } else if (cursors.left.isDown) {
             //  Move to the left
             player.body.velocity.x = -300;
@@ -298,13 +309,13 @@
         scoreText.text = 'Score: ' + score;
     }
     function playerCollisionHandler(player,cyclist){
-        lives -=1;
-        livesText.text = 'Lives: ' + lives;
-        cyclist.kill();
-        isDying = true;
+        if (!isDying) {
+            lives -= 1;
+            livesText.text = 'Lives: ' + lives;
+        }
+            cyclist.kill();
+            isDying = true;
     }
-
 </script>
-
 </body>
 </html>
