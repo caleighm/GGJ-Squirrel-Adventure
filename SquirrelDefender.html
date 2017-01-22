@@ -41,6 +41,8 @@
     var bullets;
     var bulletTime = 0;
     var fireButton;
+    var livesText;
+    var lives = 5;
 
     function create() {
         //-------------world functions----------
@@ -130,6 +132,11 @@
         scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
         scoreText.fixedToCamera = true;
         scoreText.cameraOffset.setTo(16, 16);
+
+        // Texts
+        livesText = game.add.text(500, 550, 'Lives: 5' , { fontSize: '32px', fill: "#000", align: "left" });
+        livesText.fixedToCamera = true;
+        livesText.cameraOffset.setTo(1150, 20);
 
         // Bullets
         bullets = game.add.group();
@@ -301,9 +308,16 @@
     }
 
     function playerCollisionHandler(player,cyclist){
+        lives -=1;
+        livesText.text = 'Lives: ' + lives;
         cyclist.kill();
         isDying = true;
     }
+
+
+
+
+
 
 </script>
 
