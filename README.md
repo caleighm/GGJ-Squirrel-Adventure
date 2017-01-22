@@ -1,5 +1,5 @@
 # Vancouver Game Jam 2017
-In January 2017, we -- Sam McConnell, Amy Yung, Patrick Lin and Caleigh Minshall -- met at the Global Game Jam to make our very first game together. Even though we mostly all met right before the Jam, we still managed to master JavaScript and the Phaser library in just 48 hours! ... Sort of.
+In January 2017, we -- Sam McConnell, Amy Yung, Patrick Lin and Caleigh Minshall -- met at the Global Game Jam to make our very first game together. Even though we mostly all met right before the Jam, we still managed to master JavaScript and the Phaser game development framework in just 48 hours! ... Sort of.
 
 What you see is the rough beginnings of Squirrelario -- or Squirrel Adventure -- or Squirrel Defender -- or -- well, we didn't settle on a final name.
 
