@@ -74,6 +74,7 @@
         platforms.setAll('body.immovable', true);
         platforms.setAll('body.moves', false);
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
+
         //-------------Grounds functions----------
         grounds = game.add.physicsGroup();
         grounds.enableBody = true;
@@ -177,6 +178,8 @@
         }
         //  Reset the players velocity (movement)
         player.body.velocity.x = 0;
+        followPlayer();
+
 
         if (isDead){
             player.animations.play('dead');
@@ -196,7 +199,7 @@
         } else if (cursors.left.isDown) {
             //  Move to the left
             player.body.velocity.x = -300;
-            followPlayer();
+            //followPlayer();
             if (cursors.up.isDown && player.body.touching.down) {
                 //  Allow the player to jump if they are touching the ground.
                 player.body.velocity.y = -800;
@@ -210,7 +213,8 @@
         } else if (cursors.right.isDown) {
             //  Move to the right
             player.body.velocity.x = 300;
-            followPlayer();
+
+            //followPlayer();
             if (cursors.up.isDown && player.body.touching.down) {
                 //  Allow the player to jump if they are touching the ground.
                 player.body.velocity.y = -800;
@@ -241,13 +245,11 @@
         if (!player.body.touching.down && !player.body.touching.left && !player.body.touching.right) isShaken = false;
 
         //Fire
-        if (fireButton.isDown)
-        {
+        if (fireButton.isDown) {
             fireBullet();
         }
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
-
     }
 
     function collectAcorn (player, acorn) {
@@ -282,6 +284,7 @@
         cyclistlives++;
         cyclist.body.collideWorldBounds = true;
         cyclist.body.bounce.setTo(1);
+        cyclist.body.gravity.y = 10000000;
         game.physics.arcade.velocityFromRotation(cyclist.rotation, -100, cyclist.body.velocity);
 
         //game.add.tween(cyclists).to({x:cyclists.x-5},2000, Phaser.Easing.Default, true, 0, 100, true);
@@ -294,21 +297,29 @@
         //cyclists.forEach(function(enemy) {
         cyclist = cyclists.getFirstAlive();
 
-            if (cursors.left.isDown) {
-                cyclist.body.velocity.x = 200;
+        if (cyclist) {
+            radians = game.physics.arcade.angleBetween(cyclist, player);
+            degrees = radians * (180 / Math.PI);
 
-                cyclists.callAll('animations.add','animations','right', [2, 3], 10, true);
-                cyclists.callAll('animations.play', 'animations', 'right');
+
+            if (cyclist.body.velocity.x < 0) {
+                cyclist.animations.add('left', [0, 1], 10, true);
+                cyclist.animations.play('left');
             }
-            else{
-                cyclist.body.velocity.x = -200;
-                cyclists.callAll('animations.add', 'animations', 'left', [0, 1], 10, true);
-                cyclists.callAll('animations.play', 'animations', 'left');
+
+            else {
+                cyclist.animations.add('left', [0, 1], 10, true);
+                cyclist.animations.play('left');
+                //cyclists.callAll('animations.add', 'animations', 'left', [0, 1], 10, true);
+                //cyclists.callAll('animations.play', 'animations', 'left');
 
             }
-        cyclist = cyclists.getFirstDead();
+                game.physics.arcade.velocityFromAngle(degrees, 400, cyclist.body.velocity);
+                cyclist.animations.add('left', [0, 1], 10, true);
+                cyclist.animations.play('left');
 
-        //});
+            cyclist = cyclists.getFirstDead();
+        }
     }
 
     function ledgeShake(player, ledge) {
@@ -326,6 +337,7 @@
             shake.start();
         }
     }
+
     function ledgeFall(ledge) {
         ledge.body.immovable = false;
     }
@@ -358,6 +370,7 @@
             cyclist.kill();
             isDying = true;
     }
+
 </script>
 </body>
 </html>
