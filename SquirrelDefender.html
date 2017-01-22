@@ -93,8 +93,6 @@
         player.body.collideWorldBounds = true;
         //  Animations: walking left, right, jumping, idling, and landing.
         player.animations.add('right', [4, 2, 6], 6, true);
-        //player.animations.add('right', [25, 27, 26, 27], 6, true);
-        //player.animations.add('left', [20, 22, 18], 6, true);
         player.animations.add('left', [20, 22, 18], 6, true);
         player.animations.add('jump', [8], 1, true);
         player.animations.add('idle', [9, 10, 9, 11], 4, true);
@@ -142,9 +140,6 @@
         cyclists = game.add.group();
         cyclists.enableBody = true;
         cyclists.physicsBodyType = Phaser.Physics.ARCADE;
-        //cyclists.setAll('outOfBoundsKill', false);
-        //cyclists.setAll('checkWorldBounds', false);
-        createCyclists();
 
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
@@ -169,7 +164,6 @@
                 player.animations.play('jump');
                 isGrounded = false;
             } else if (!isGrounded) {
-                //isGrounded = true;
                 player.animations.play('land');
                 player.animations.currentAnim.onComplete.add(function () {
                     isGrounded = true;
@@ -233,7 +227,6 @@
         } else if (!player.body.touching.down || !isGrounded) {
             checkLanding();
         } else if (!isGrounded) {
-            //isGrounded = true;
             player.animations.play('land');
             player.animations.currentAnim.onComplete.add(function () {isGrounded = true;}, this);
         } else {
@@ -279,6 +272,8 @@
 
     function createCyclists() {
         var cyclist = game.add.sprite(player.x + game.world.randomX, game.world.height - 90, 'bicycle');
+        cyclist.isLeft = true;  // this might not be correct if cyclists can spawn to the right of the player...
+        cyclist.anchor.setTo(.5,.5);
         cyclist.scale.setTo(2, 2);
         cyclists.add(cyclist);
         cyclistlives++;
@@ -287,14 +282,11 @@
         cyclist.body.gravity.y = 10000000;
         game.physics.arcade.velocityFromRotation(cyclist.rotation, -100, cyclist.body.velocity);
 
-        //game.add.tween(cyclists).to({x:cyclists.x-5},2000, Phaser.Easing.Default, true, 0, 100, true);
-
         cyclists.callAll('animations.add','animations','left', [0, 1], 10, true);
         cyclists.callAll('animations.play', 'animations', 'left');
     }
 
     function followPlayer() {
-        //cyclists.forEach(function(enemy) {
         cyclist = cyclists.getFirstAlive();
 
         if (cyclist) {
@@ -302,22 +294,16 @@
             degrees = radians * (180 / Math.PI);
 
 
-            if (cyclist.body.velocity.x < 0) {
-                cyclist.animations.add('left', [0, 1], 10, true);
-                cyclist.animations.play('left');
+            if (cyclist.body.velocity.x < 0 && !cyclist.isLeft) {
+                cyclist.isLeft = true;
+                cyclist.scale.x *= -1;
             }
 
-            else {
-                cyclist.animations.add('left', [0, 1], 10, true);
-                cyclist.animations.play('left');
-                //cyclists.callAll('animations.add', 'animations', 'left', [0, 1], 10, true);
-                //cyclists.callAll('animations.play', 'animations', 'left');
-
+            else if (cyclist.body.velocity.x > 0 && cyclist.isLeft){
+                cyclist.isLeft = false;
+                cyclist.scale.x *= -1;
             }
-                game.physics.arcade.velocityFromAngle(degrees, 400, cyclist.body.velocity);
-                cyclist.animations.add('left', [0, 1], 10, true);
-                cyclist.animations.play('left');
-
+            game.physics.arcade.velocityFromAngle(degrees, 400, cyclist.body.velocity);
             cyclist = cyclists.getFirstDead();
         }
     }
@@ -367,8 +353,8 @@
             lives -= 1;
             livesText.text = 'Lives: ' + lives;
         }
-            cyclist.kill();
-            isDying = true;
+        cyclist.kill();
+        isDying = true;
     }
 
 </script>
