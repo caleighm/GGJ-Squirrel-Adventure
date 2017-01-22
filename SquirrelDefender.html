@@ -53,6 +53,7 @@
     var livesText;
     var lives = 5;
     var stateText;
+    var winText;
     var boing;
     var poofsound;
     var chompsound;
@@ -60,6 +61,7 @@
     var shakesound;
     var gamestate = false;
     var bullet = null;
+    var killCount = 0;
 
     function create() {
         //-------------world functions----------
@@ -143,6 +145,12 @@
         livesText.fixedToCamera = true;
         livesText.cameraOffset.setTo(1150, 20);
 
+        //  Win
+        winText = game.add.text(game.world.centerX+100,game.world.centerY, 'You win!', { font: '84px Arial', fill: '#000' });
+        winText.fixedToCamera = true;
+        winText.cameraOffset.setTo(500, 250);
+        winText.visible = false;
+
         // -------------Game States-------------
         stateText = game.add.text(game.world.centerX+100,game.world.centerY,' ', { font: '84px Arial', fill: '#000' });
         stateText.anchor.setTo(0.5, 0.5);
@@ -178,7 +186,7 @@
     function update() {
 
         if (gamestate === true) {
-            if (cyclists.countLiving() < maxCycle) {
+            if (cyclists.countLiving() < maxCycle && killCount != 10) {
                 createCyclists();
             }
             //  Collide the player and the acorns with the platforms
@@ -290,8 +298,21 @@
             isShaken = false;
         }
 
+        // Win
+        winGame();
+
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
+    }
+
+    function winGame(){
+        if(killCount == 10){
+            winText.visible = true;
+            scoreText.visible = false;
+            livesText.visible = false;
+            cyclists.callAll('kill');
+            player.kill();
+        }
     }
 
     function collectAcorn (player, acorn) {
@@ -413,6 +434,7 @@
         poofsound.play();
         score += 20;
         scoreText.text = 'Score: ' + score;
+        killCount++;
     }
 
     function playerCollisionHandler(player,cyclist){
