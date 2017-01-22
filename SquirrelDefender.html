@@ -49,7 +49,7 @@
     var bulletTime = 0;
     var fireButton;
     var cyclistlives = 0;
-    var maxCycle = 5;
+    var maxCycle = 3;
     var livesText;
     var lives = 5;
     var stateText;
@@ -59,10 +59,11 @@
     var bulletsound;
     var shakesound;
     var gamestate = false;
+    var bullet = null;
 
     function create() {
         //-------------world functions----------
-        game.world.setBounds(0, 0, 3500, this.game.height);
+        game.world.setBounds(0, 0, 3500, this.game.height + 100);
         outside = game.add.tileSprite(0, 0, this.game.world.width, this.game.world.height, 'background');
         outside.autoScroll(0, 0);
         //  We're going to be using physics, so enable the Arcade Physics system
@@ -83,16 +84,14 @@
         platforms = game.add.physicsGroup();
         //  We will enable physics for any object that is created in this group
         platforms.enableBody = true;
-        //platforms = game.add.physicsGroup();
-        //  Now let's create ZILLIONS of ledges
-        platforms.create(400, 400, 'platform');
-        platforms.create(100, 100, 'platform');
-        platforms.create(-150, 250, 'platform');
-        platforms.create(900, 325, 'platform');
+        platforms.create(-200, 570, 'platform');
+        platforms.create(250, 350, 'platform');
+        platforms.create(650, 350, 'platform');
+        platforms.create(900, 570, 'platform');
         platforms.create(1450, 400, 'platform');
         platforms.create(1700, 200, 'platform');
         platforms.create(2000, 350, 'platform');
-        platforms.create(2300, 100, 'platform');
+        //platforms.create(2300, 100, 'platform');
         platforms.create(2600, 400, 'platform');
         platforms.create(2950, 250, 'platform');
         platforms.create(3290, 370, 'platform');
@@ -191,7 +190,7 @@
             game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
 
             //  Fire
-            if (fireButton.isDown) {
+            if (fireButton.isDown && !bullets.getFirstAlive()) {
                 fireBullet();
             }
         }
@@ -253,7 +252,7 @@
             //followPlayer();
             if (cursors.up.isDown && player.body.touching.down) {
                 //  Allow the player to jump if they are touching the ground.
-                player.body.velocity.y = -800;
+                player.body.velocity.y = -700;
                 boing.play();
                 isGrounded = false;
             }
@@ -266,10 +265,9 @@
             //  Move to the right
             player.body.velocity.x = 300;
 
-            // followPlayer();
             if (cursors.up.isDown && player.body.touching.down) {
                 //  Allow the player to jump if they are touching the ground.
-                player.body.velocity.y = -800;
+                player.body.velocity.y = -700;
                 isGrounded = false;
                 player.animations.play('jump');
                 boing.play();
@@ -281,7 +279,7 @@
             }
         } else if (cursors.up.isDown && player.body.touching.down) {
             //  Allow the player to jump if they are touching the ground.
-            player.body.velocity.y = -800;
+            player.body.velocity.y = -700;
             boing.play();
             isGrounded = false;
         } else if (!player.body.touching.down || !isGrounded) {
@@ -331,10 +329,10 @@
     }
 
     function createCyclists() {
-        var cyclist = game.add.sprite(player.x + game.world.randomX, game.world.height - 90, 'bicycle');
+        var cyclist = game.add.sprite(player.x + 500 + game.world.randomX, game.world.height - 90, 'bicycle');
         cyclist.isLeft = true;  // this might not be correct if cyclists can spawn to the right of the player...
         cyclist.anchor.setTo(.5,.5);
-        cyclist.scale.setTo(3, 3);
+        cyclist.scale.setTo(2.8, 2.8);
         cyclists.add(cyclist);
         cyclistlives++;
         cyclist.body.collideWorldBounds = true;
@@ -353,7 +351,6 @@
             radians = game.physics.arcade.angleBetween(cyclist, player);
             degrees = radians * (180 / Math.PI);
 
-
             if (cyclist.body.velocity.x < 0 && !cyclist.isLeft) {
                 cyclist.isLeft = true;
                 cyclist.scale.x *= -1;
@@ -363,7 +360,7 @@
                 cyclist.isLeft = false;
                 cyclist.scale.x *= -1;
             }
-            game.physics.arcade.velocityFromAngle(degrees, 400, cyclist.body.velocity);
+            game.physics.arcade.velocityFromAngle(degrees, 100, cyclist.body.velocity);
             cyclist = cyclists.getFirstDead();
         }
     }
