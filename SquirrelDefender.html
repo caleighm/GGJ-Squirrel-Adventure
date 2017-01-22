@@ -19,10 +19,10 @@
         game.load.image('background', 'assets/background.png');
         game.load.image('ground', 'assets/groundv.png');
         game.load.image('platform', 'assets/platformv.png');
-        game.load.image('star', 'assets/star.png');
         game.load.spritesheet('squirrel', 'assets/Squirrel.png', 33, 34);
         game.load.spritesheet('bicycle', 'assets/bicycle.png', 36, 33);
         game.load.spritesheet('skater', 'assets/skater.png', 76, 150);
+        game.load.spritesheet('acorn', 'assets/acorn.png', 20, 23);
     }
     var player;
     var isGrounded = false;
@@ -32,7 +32,7 @@
     var grounds;
     var platforms;
     var cursors;
-    var stars;
+    var acorns;
     var score = 0;
     var scoreText;
     var outside;
@@ -99,20 +99,22 @@
         player.animations.add('dying', [28, 29, 30, 31, 32, 33, 34, 35, 36], 10, false);
         player.animations.add('dead', [36], 1, true);
         player.scale.setMagnitude(3);
-        //  Finally some stars to collect
-        stars = game.add.group();
-        //  We will enable physics for any star that is created in this group
-        stars.enableBody = true;
-        //  Here we'll create 12 of them evenly spaced apart
-        for (var i = 0; i < 12; i++)
+
+        //  Finally some acorns to collect
+        acorns = game.add.group();
+        acorns.enableBody = true;
+
+        //  Make acorns fall from the sky
+        for (var i = 0; i < 50; i++)
         {
-            //  Create a star inside of the 'stars' group
-            var star = stars.create(i * 70, 0, 'star');
+            //  Create an acorn inside of the 'acorns' group
+            var acorn = acorns.create(i * 800 * Math.random(), 0, 'acorn');
             //  Let gravity do its thing
-            star.body.gravity.y = 300;
+            acorn.body.gravity.y = 200;
             //  This just gives each star a slightly random bounce value
-            star.body.bounce.y = 0.7 + Math.random() * 0.2;
+            acorn.body.bounce.y = 0.4 + Math.random() * 0.2;
         }
+
         game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.5);
         //  The score
         scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
@@ -145,13 +147,13 @@
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     }
     function update() {
-        //  Collide the player and the stars with the platforms
+        //  Collide the player and the acorns with the platforms
         game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
-        game.physics.arcade.collide(stars, platforms);
+        game.physics.arcade.collide(acorns, platforms);
         game.physics.arcade.collide(player, grounds);
-        game.physics.arcade.collide(stars, grounds);
-        //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
-        game.physics.arcade.overlap(player, stars, collectStar, null, this);
+        game.physics.arcade.collide(acorns, grounds);
+        //  Checks to see if the player overlaps with any of the acorns, if he does call the collectAcorn function
+        game.physics.arcade.overlap(player, acorns, collectAcorn, null, this);
         function checkLanding() {
             if (!player.body.touching.down) {
                 player.animations.play('jump');
@@ -215,7 +217,8 @@
             player.animations.play('idle');
         }
 
-        if (!player.body.touching.down) isShaken = false;
+        //  Check if player is off the ground and if so, reset isShaken
+        if (!player.body.touching.down && !player.body.touching.left && !player.body.touching.right) isShaken = false;
 
         //Fire
         if (fireButton.isDown)
@@ -225,9 +228,9 @@
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
     }
-    function collectStar (player, star) {
-        // Removes the star from the screen
-        star.kill();
+    function collectAcorn (player, acorn) {
+        // Removes the acorn from the screen
+        acorn.kill();
         //  Add and update the score
         score += 10;
         scoreText.text = 'Score: ' + score;
@@ -269,12 +272,23 @@
             var ease = Phaser.Easing.Bounce.In;
             var autoStart = false;
             var yoyo = true;
-            var shake = game.add.tween(ledge).to(properties, duration, ease, autoStart, 0, repeat, yoyo);
+            var shake = game.add.tween(ledge).to(properties, duration, ease, autoStart, 100, repeat, yoyo);
+            acornFalls(ledge);
             shake.start();
         }
     }
     function ledgeFall(ledge) {
         ledge.body.immovable = false;
+    }
+
+    function acornFalls(ledge) {
+        var acorn = game.add.sprite(ledge.x + 100, ledge.y+10, 'acorn');
+        acorns.add(acorn);
+
+        //  Let gravity do its thing
+        acorn.body.gravity.y = 300;
+        //  This just gives each acorn a slightly random bounce value
+        acorn.body.bounce.y = 0.4 + Math.random() * 0.2;
     }
 
     function collisionHandler(bullet,cyclist){
