@@ -57,7 +57,8 @@
     var poofsound;
     var chompsound;
     var bulletsound;
-    var shakeshound;
+    var shakesound;
+    var gamestate = false;
 
     function create() {
         //-------------world functions----------
@@ -67,7 +68,7 @@
         //  We're going to be using physics, so enable the Arcade Physics system
         game.physics.startSystem(Phaser.Physics.ARCADE);
 
-        // Add music and sound effects
+        //----------Add music----------
         var music = game.add.audio('amok');
         music.loop = true;
         music.play();
@@ -109,6 +110,8 @@
         ground.scale.setTo(10, 2);
         grounds.setAll('body.immovable', true);
         grounds.physicsBodyType = Phaser.Physics.ARCADE;
+
+        //----------Player Functions----------
         // The player and its settings
         player = game.add.sprite(500, game.world.height - 500, 'squirrel');
         //  We need to enable physics on the player
@@ -126,19 +129,15 @@
         player.animations.add('dying', [28, 29, 30, 31, 32, 33, 34, 35, 36], 10, false);
         player.animations.add('dead', [36], 1, true);
         player.scale.setMagnitude(3);
+        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.5);
 
-
-        //  Finally some acorns to collect
+        //----------Acron Functions----------
         acorns = game.add.group();
         acorns.enableBody = true;
 
-        skyAcorns();
-
-        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.5);
-
         //-------------Texts----------
         //  The score
-        scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
         scoreText.fixedToCamera = true;
         scoreText.cameraOffset.setTo(16, 16);
 
@@ -148,9 +147,16 @@
         livesText.cameraOffset.setTo(1150, 20);
 
         // Gameover
-        stateText = game.add.text(0,0,' ', { font: '84px Arial', fill: '#000' });
+        //stateText = game.add.text(0,0,' ', { font: '84px Arial', fill: '#000' });
+
+        // -------------Game States-------------
+        stateText = game.add.text(game.world.centerX+100,game.world.centerY,' ', { font: '84px Arial', fill: '#000' });
         stateText.anchor.setTo(0.5, 0.5);
-        stateText.visible = false;
+        stateText.visible = true;
+        stateText.fixedToCamera = true;
+        stateText.cameraOffset.setTo(600, 300);
+        stateText.text = " - Click to start - ";
+        stateText.visible = true;
 
         // Bullets
         bullets = game.add.group();
@@ -170,22 +176,39 @@
         //  Our controls.
         cursors = game.input.keyboard.createCursorKeys();
         fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+        //Start Game
+        game.input.onTap.addOnce(startGame,this);
     }
 
     function update() {
 
-        if (cyclists.countLiving() < maxCycle) {
+        if (gamestate === true) {
+            if (cyclists.countLiving() < maxCycle) {
                 createCyclists();
+            }
+            //  Collide the player and the acorns with the platforms
+            game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
+
+            //  Fire
+            if (fireButton.isDown) {
+                fireBullet();
+            }
         }
 
-        //  Collide the player and the acorns with the platforms
-        game.physics.arcade.collide(player, platforms, ledgeShake, null, this);
+        else {
+            //  Collide the player and the acorns with the platforms
+            game.physics.arcade.collide(player, platforms);
+        }
+
+        //game.physics.arcade.collide(player, platforms);
         game.physics.arcade.collide(acorns, platforms);
         game.physics.arcade.collide(player, grounds);
         game.physics.arcade.collide(acorns, grounds);
         game.physics.arcade.collide(cyclists, grounds);
         //  Checks to see if the player overlaps with any of the acorns, if he does call the collectAcorn function
         game.physics.arcade.overlap(player, acorns, collectAcorn, null, this);
+
         function checkLanding() {
             if (!player.body.touching.down) {
                 player.animations.play('jump');
@@ -197,6 +220,7 @@
                 }, this);
             }
         }
+
         //  Reset the players velocity (movement)
         player.body.velocity.x = 0;
         followPlayer();
@@ -216,9 +240,8 @@
                 stateText.visible = true;
                 //the "click to restart" handler
                 game.input.onTap.addOnce(restart,this);
-                }
             }
-        else if (isDying) {
+        } else if (isDying) {
             player.animations.play('dying');
             player.animations.currentAnim.onComplete.add(function () {
                 isDead = true;
@@ -231,7 +254,7 @@
             if (cursors.up.isDown && player.body.touching.down) {
                 //  Allow the player to jump if they are touching the ground.
                 player.body.velocity.y = -800;
-                //boing.play();
+                boing.play();
                 isGrounded = false;
             }
             if(player.body.touching.down) {    //checkLanding();;
@@ -249,7 +272,7 @@
                 player.body.velocity.y = -800;
                 isGrounded = false;
                 player.animations.play('jump');
-                //boing.play();
+                boing.play();
             }
             if(player.body.touching.down) {    //checkLanding();;
                 player.animations.play('right');
@@ -259,7 +282,7 @@
         } else if (cursors.up.isDown && player.body.touching.down) {
             //  Allow the player to jump if they are touching the ground.
             player.body.velocity.y = -800;
-            //boing.play();
+            boing.play();
             isGrounded = false;
         } else if (!player.body.touching.down || !isGrounded) {
             checkLanding();
@@ -276,13 +299,8 @@
             isShaken = false;
         }
 
-        //  Fire
-        if (fireButton.isDown) {
-            fireBullet();
-        }
         game.physics.arcade.overlap(cyclists, bullets, collisionHandler, null, this);
         game.physics.arcade.overlap(player, cyclists, playerCollisionHandler, null, this);
-
     }
 
     function collectAcorn (player, acorn) {
@@ -351,7 +369,7 @@
     }
 
     function ledgeShake(player, ledge) {
-        if (! isShaken) {
+        if (!isShaken) {
             isShaken = true;
             shakesound.play();
             var rumbleOffset = 8;
@@ -392,7 +410,7 @@
         var smooke = game.add.sprite(x, y-100, 'poof');
         smooke.animations.add('poofing',
             [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],
-            20, true);
+            20, false);
         smooke.animations.play('poofing');
     }
 
@@ -403,9 +421,9 @@
         poofsound.play();
         score += 20;
         scoreText.text = 'Score: ' + score;
-        cyclist.revive();
-        cyclist.x = player.x + game.world.randomX;
-        cyclist.y = game.world.height - 90;
+        //cyclist.revive();
+        //cyclist.x = player.x + game.world.randomX;
+        //cyclist.y = game.world.height - 90;
     }
 
     function playerCollisionHandler(player,cyclist){
@@ -428,6 +446,13 @@
             //  This just gives each acorn a slightly random bounce value
             acorn.body.bounce.y = 0.4 + Math.random() * 0.2;
         }
+    }
+
+    //Start Game
+    function startGame(){
+        stateText.visible = false;
+        gamestate = true;
+        skyAcorns();
     }
 
     //  Restart the game
