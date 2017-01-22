@@ -29,6 +29,7 @@
         game.load.audio('chomp', ['assets/audio/chomp.mp3', 'assets/audio/chomp.ogg']);
         game.load.audio('ping', ['assets/audio/bullet.mp3', 'assets/audio/bullet.ogg']);
         game.load.audio('boing', ['assets/audio/boing.mp3', 'assets/audio/boing.ogg']);
+        game.load.audio('shake', ['assets/audio/shake.mp3', 'assets/audio/shake.ogg']);
     }
 
     var player;
@@ -56,6 +57,7 @@
     var poofsound;
     var chompsound;
     var bulletsound;
+    var shakeshound;
 
     function create() {
         //-------------world functions----------
@@ -73,6 +75,7 @@
         chompsound = game.add.audio('chomp');
         bulletsound = game.add.audio('ping');
         boing = game.add.audio('boing');
+        shakesound = game.add.audio('shake');
 
         //-------------Platform functions----------
         //  The platforms group contains the ground and the ledges we can jump on
@@ -350,6 +353,7 @@
     function ledgeShake(player, ledge) {
         if (! isShaken) {
             isShaken = true;
+            shakesound.play();
             var rumbleOffset = 8;
             var properties = {x: ledge.x - rumbleOffset};
             var duration = 100;
