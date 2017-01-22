@@ -49,7 +49,7 @@
     var bulletTime = 0;
     var fireButton;
     var cyclistlives = 0;
-    var maxCycle = 3;
+    var maxCycle = 5;
     var livesText;
     var lives = 5;
     var stateText;
@@ -99,8 +99,6 @@
         platforms.setAll('body.moves', false);
         platforms.physicsBodyType = Phaser.Physics.ARCADE;
 
-        //poofs = game.add.group();
-
         //-------------Grounds functions----------
         grounds = game.add.physicsGroup();
         grounds.enableBody = true;
@@ -144,9 +142,6 @@
         livesText = game.add.text(500, 550, 'Lives: 5' , { fontSize: '32px', fill: "#000", align: "left" });
         livesText.fixedToCamera = true;
         livesText.cameraOffset.setTo(1150, 20);
-
-        // Gameover
-        //stateText = game.add.text(0,0,' ', { font: '84px Arial', fill: '#000' });
 
         // -------------Game States-------------
         stateText = game.add.text(game.world.centerX+100,game.world.centerY,' ', { font: '84px Arial', fill: '#000' });
@@ -199,8 +194,6 @@
             //  Collide the player and the acorns with the platforms
             game.physics.arcade.collide(player, platforms);
         }
-
-        //game.physics.arcade.collide(player, platforms);
         game.physics.arcade.collide(acorns, platforms);
         game.physics.arcade.collide(player, grounds);
         game.physics.arcade.collide(acorns, grounds);
@@ -329,7 +322,7 @@
     }
 
     function createCyclists() {
-        var cyclist = game.add.sprite(player.x + 500 + game.world.randomX, game.world.height - 90, 'bicycle');
+        var cyclist = game.add.sprite(player.x + game.world.randomX + 1000, game.world.height - 90, 'bicycle');
         cyclist.isLeft = true;  // this might not be correct if cyclists can spawn to the right of the player...
         cyclist.anchor.setTo(.5,.5);
         cyclist.scale.setTo(2.8, 2.8);
@@ -420,9 +413,6 @@
         poofsound.play();
         score += 20;
         scoreText.text = 'Score: ' + score;
-        //cyclist.revive();
-        //cyclist.x = player.x + game.world.randomX;
-        //cyclist.y = game.world.height - 90;
     }
 
     function playerCollisionHandler(player,cyclist){
