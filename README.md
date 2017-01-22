@@ -1,10 +1,13 @@
-# Team TODO
-Amy: make squirrel shoot stuff
-Caleigh: make easy baddies
-Patrick: background/obstacles/"world"
-Sam: player assets
+# Vancouver Game Jam 2017
+In January 2017, we -- Sam McConnell, Amy Yung, Patrick Lin and Caleigh Minshall -- met at the Global Game Jam to make our very first game together. Even though we didn't all know each other, we conquered JavaScript and the Phaser library in just 48 hours! ... Sort of.
 
-This project is indented to help everyone with getting started with Phaser + TypeScript game development, once you download it you are ready to start right away.
+What you see is the rough beginnings of Squirrelario -- or Squirrel Adventure -- or Squirrel Defender -- or -- well, we didn't settle on a final name.
+
+You are a fearless and feisty squirrel navigating UBC's Main Mall at noon. Peak longboarder and cyclist time! What are you to do?! On the one hand, acorns are tasty. On the other hand, death by cyclist is no piece of cake either. 
+
+Your mission, should you choose to accept it, is to collect enough acorns and kill enough cyclists (by shooting stars at them...don't ask) before cyclists make mincemeat of you.
+
+Good luck!
 
 # Usage
 
