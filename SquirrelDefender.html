@@ -295,8 +295,10 @@
         scoreText.text = 'Score: ' + score;
     }
     function playerCollisionHandler(player,cyclist){
+        if (!isDying) {
             lives -= 1;
             livesText.text = 'Lives: ' + lives;
+        }
             cyclist.kill();
             isDying = true;
     }
